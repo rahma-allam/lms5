@@ -1,4 +1,35 @@
-const CACHE_NAME = "lms-pwa-v2";
+const CACHE_NAME = "lms-pwa-v3";
+
+self.addEventListener("push", (event) => {
+  let data = { title: "LMS Platform", body: "لديك إشعار جديد" };
+  try { data = { ...data, ...event.data?.json() }; } catch {}
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      dir: "auto",
+      tag: data.tag ?? "lms-notification",
+      data: data.url ? { url: data.url } : undefined,
+    })
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url ?? "/";
+  event.waitUntil(
+    clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((all) => {
+        for (const client of all) {
+          if ("focus" in client) return client.focus();
+        }
+        if (clients.openWindow) return clients.openWindow(url);
+      })
+  );
+});
 
 const APP_SHELL = [
   "/",

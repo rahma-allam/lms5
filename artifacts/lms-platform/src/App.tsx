@@ -26,6 +26,7 @@ import { useEffect } from "react";
 import { InstructorAuthProvider, useInstructorAuth } from "./lib/instructorAuth";
 import InstructorLogin from "./pages/InstructorLogin";
 import InstructorDashboard from "./pages/InstructorDashboard";
+import { NotificationPrompt } from "@/components/NotificationPrompt";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
@@ -147,6 +148,7 @@ function AppWithTenantGuard() {
           <AppRoutes />
         </WouterRouter>
         <Toaster richColors position="top-right" />
+        <NotificationPrompt />
       </AdminAuthProvider>
     </InstructorAuthProvider>
   );

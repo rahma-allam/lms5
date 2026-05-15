@@ -147,6 +147,12 @@ const translations: Translations = {
     analyzing: "Analyzing...",
     aiInsights: "AI Marketing Insights",
     aiError: "Failed to get AI analysis. Please try again.",
+    notifPromptTitle: "Stay in the loop",
+    notifPromptBody: "Get notified about new enrollments, orders, and important alerts.",
+    notifAllow: "Allow notifications",
+    notifLater: "Maybe later",
+    notifGranted: "Notifications enabled!",
+    notifDenied: "Notifications blocked in browser settings.",
   },
   ar: {
     dashboard: "لوحة التحكم",
@@ -291,6 +297,12 @@ const translations: Translations = {
     analyzing: "جاري التحليل...",
     aiInsights: "توصيات التسويق الذكي",
     aiError: "فشل تحليل الذكاء الاصطناعي. حاول مرة أخرى.",
+    notifPromptTitle: "ابقَ على اطلاع دائم",
+    notifPromptBody: "احصل على إشعارات فورية عند تسجيل طلاب جدد أو وصول طلبات الدفع.",
+    notifAllow: "السماح بالإشعارات",
+    notifLater: "لاحقاً",
+    notifGranted: "تم تفعيل الإشعارات!",
+    notifDenied: "الإشعارات محظورة في إعدادات المتصفح.",
   },
 };
 
