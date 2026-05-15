@@ -1,7 +1,8 @@
-const CACHE_NAME = "lms-pwa-v1";
+const CACHE_NAME = "lms-pwa-v2";
 
 const APP_SHELL = [
   "/",
+  "/offline.html",
   "/manifest.json",
   "/icon-192.svg",
   "/icon-512.svg",
@@ -42,7 +43,11 @@ self.addEventListener("fetch", (event) => {
   if (request.destination === "document") {
     event.respondWith(
       fetch(request).catch(() =>
-        caches.match("/").then((cached) => cached ?? fetch(request))
+        caches.match("/offline.html").then(
+          (cached) => cached ?? new Response("<h1>أنت غير متصل بالإنترنت</h1>", {
+            headers: { "Content-Type": "text/html; charset=utf-8" },
+          })
+        )
       )
     );
     return;
@@ -64,7 +69,7 @@ self.addEventListener("fetch", (event) => {
             caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
           }
           return response;
-        })
+        }).catch(() => caches.match(request))
     )
   );
 });
