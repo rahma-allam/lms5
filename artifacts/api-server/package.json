@@ -4,11 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node --env-file=../../.env ./build.mjs && node --enable-source-maps --env-file=../../.env ./dist/index.mjs",
+    "dev": "node ./build.mjs && node --enable-source-maps ./dist/index.mjs",
     "build": "node ./build.mjs",
     "start": "node --enable-source-maps ./dist/index.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "dev:watch": "tsx watch --env-file=../../.env src/index.ts"
+    "dev:watch": "tsx src/index.ts"
   },
   "dependencies": {
     "@workspace/api-zod": "workspace:*",
