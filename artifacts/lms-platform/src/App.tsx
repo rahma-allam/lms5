@@ -22,7 +22,7 @@ import Categories from "./pages/Categories";
 import Coupons from "./pages/Coupons";
 import AdminLogin from "./pages/AdminLogin";
 import MarketingAI from "./pages/MarketingAI";
-import LandingPage from "./pages/LandingPage";
+import LandingPage from "./pages/StorefrontLandingPage";
 import SuperAdminLogin from "./pages/SuperAdminLogin";
 import SuperAdmin from "./pages/SuperAdmin";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -32,10 +32,29 @@ import { InstructorAuthProvider, useInstructorAuth } from "./lib/instructorAuth"
 import InstructorLogin from "./pages/InstructorLogin";
 import InstructorDashboard from "./pages/InstructorDashboard";
 import { NotificationPrompt } from "@/components/NotificationPrompt";
+import StorefrontLandingPage from "./pages/StorefrontLandingPage";
+import CoursePage from "./pages/CoursePage";
+import CheckoutPage from "./pages/CheckoutPage";
+import RegisterPage from "./pages/RegisterPage";
+import LoginPage from "./pages/LoginPage";
+import StudentPortal from "./pages/StudentPortal";
+import CertificatePage from "./pages/CertificatePage";
+import { AuthProvider } from "@/lib/auth";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
 });
+
+function isStorefrontPath() {
+  const p = window.location.pathname;
+  return p === "/storefront" || p.startsWith("/storefront/");
+}
+
+function isPublicNextEduPath() {
+  const p = window.location.pathname;
+  return p === "/nextedu" || p.startsWith("/nextedu/") ||
+    p === "/super-admin" || p.startsWith("/super-admin/");
+}
 
 function AcademyNotFound() {
   return (
@@ -97,7 +116,21 @@ function InstructorAuthGuard({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-function AppRoutes() {
+function StorefrontRoutes() {
+  return (
+    <Switch>
+      <Route path="/storefront" component={StorefrontLandingPage} />
+      <Route path="/storefront/courses/:id" component={CoursePage} />
+      <Route path="/storefront/checkout/:id" component={CheckoutPage} />
+      <Route path="/storefront/register" component={RegisterPage} />
+      <Route path="/storefront/login" component={LoginPage} />
+      <Route path="/storefront/portal" component={StudentPortal} />
+      <Route path="/storefront/certificate/:id" component={CertificatePage} />
+    </Switch>
+  );
+}
+
+function AdminRoutes() {
   usePixels();
   return (
     <Switch>
@@ -153,26 +186,33 @@ function AppWithTenantGuard() {
 
   if (notFound) return <AcademyNotFound />;
 
+  // Storefront - public, no admin auth needed
+  if (isStorefrontPath()) {
+    return (
+      <AuthProvider>
+        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+          <StorefrontRoutes />
+        </WouterRouter>
+        <Toaster richColors position="top-right" />
+      </AuthProvider>
+    );
+  }
+
+  // Admin dashboard
   return (
     <InstructorAuthProvider>
       <AdminAuthProvider>
-        <TokenSetter />
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <AppRoutes />
-        </WouterRouter>
-        <Toaster richColors position="top-right" />
-        <NotificationPrompt />
+        <AuthProvider>
+          <TokenSetter />
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            <AdminRoutes />
+          </WouterRouter>
+          <Toaster richColors position="top-right" />
+          <NotificationPrompt />
+        </AuthProvider>
       </AdminAuthProvider>
     </InstructorAuthProvider>
   );
-}
-
-// Detects if the current path is a NextEdu public/super-admin path
-// that doesn't need tenant context
-function isPublicNextEduPath() {
-  const p = window.location.pathname;
-  return p === "/nextedu" || p.startsWith("/nextedu/") ||
-    p === "/super-admin" || p.startsWith("/super-admin/");
 }
 
 function PublicRoutes() {

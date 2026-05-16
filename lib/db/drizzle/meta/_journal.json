@@ -15,6 +15,34 @@
       "when": 1778241791447,
       "tag": "0001_organic_dakota_north",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1778500000001,
+      "tag": "0002_add_avatar_url",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1778500000002,
+      "tag": "0003_paymob_and_thumbnail",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1778500000003,
+      "tag": "0004_notifications",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1778500000004,
+      "tag": "0005_messages_conversations",
+      "breakpoints": true
     }
   ]
 }

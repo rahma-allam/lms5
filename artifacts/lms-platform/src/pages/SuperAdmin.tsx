@@ -72,6 +72,16 @@ export default function SuperAdmin() {
 
   const logout = () => { localStorage.removeItem(SA_TOKEN_KEY); navigate("/super-admin/login"); };
 
+  const deleteTenant = async (id: number, name: string) => {
+    if (!confirm(`هل أنت متأكد من حذف أكاديمية "${name}"؟ هذا الإجراء لا يمكن التراجع عنه.`)) return;
+    const res = await saFetch(`/tenants/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      setTenants(prev => prev.filter(t => t.id !== id));
+    } else {
+      alert("حدث خطأ أثناء الحذف");
+    }
+  };
+
   const filtered = tenants.filter(t =>
     t.slug.includes(search) || t.name.includes(search) || (t.academyName ?? "").includes(search)
   );
@@ -174,6 +184,9 @@ export default function SuperAdmin() {
                     <div className="flex gap-2">
                       <button onClick={() => setEditTenant(t)} className="p-1.5 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-900/20 text-violet-500 transition-colors">
                         <Edit3 className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => deleteTenant(t.id, t.academyName ?? t.name)} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 transition-colors">
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>

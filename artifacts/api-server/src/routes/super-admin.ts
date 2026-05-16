@@ -95,29 +95,34 @@ router.post("/tenants", requireSuperAdmin, async (req, res) => {
       return res.status(400).json({ error: "name, slug, adminEmail, adminPassword required" });
     }
 
-    // Create tenant
-    const [tenant] = await db
-      .insert(tenantsTable)
-      .values({ name, slug, status: "active", plan: plan ?? "starter", planExpiresAt: planExpiresAt ? new Date(planExpiresAt) : null })
-      .returning();
-
-    // Create settings
-    await db.insert(settingsTable).values({ tenantId: tenant!.id, academyName: name });
-
-    // Create admin user
     const hashed = await bcrypt.hash(adminPassword, 10);
-    await db.insert(adminUsersTable).values({
-      tenantId: tenant!.id,
-      email: adminEmail,
-      password: hashed,
-      name: `${name} Admin`,
+
+    const result = await db.transaction(async (tx) => {
+      // Create tenant
+      const [tenant] = await tx
+        .insert(tenantsTable)
+        .values({ name, slug, status: "active", plan: plan ?? "starter", planExpiresAt: planExpiresAt ? new Date(planExpiresAt) : null })
+        .returning();
+
+      // Create settings
+      await tx.insert(settingsTable).values({ tenantId: tenant!.id, academyName: name });
+
+      // Create admin user
+      await tx.insert(adminUsersTable).values({
+        tenantId: tenant!.id,
+        email: adminEmail,
+        password: hashed,
+        name: `${name} Admin`,
+      });
+
+      return tenant;
     });
 
-    res.status(201).json({ tenant, adminEmail, message: "Academy created successfully" });
+    res.status(201).json({ tenant: result, adminEmail, message: "Academy created successfully" });
   } catch (err: any) {
     req.log.error({ err }, "Error creating tenant");
     if (err.code === "23505") return res.status(409).json({ error: "Slug already taken" });
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: err.message ?? "Internal server error" });
   }
 });
 
