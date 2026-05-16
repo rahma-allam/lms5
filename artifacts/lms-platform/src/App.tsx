@@ -25,6 +25,8 @@ import MarketingAI from "./pages/MarketingAI";
 import LandingPage from "./pages/LandingPage";
 import SuperAdminLogin from "./pages/SuperAdminLogin";
 import SuperAdmin from "./pages/SuperAdmin";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import { useEffect } from "react";
 import { InstructorAuthProvider, useInstructorAuth } from "./lib/instructorAuth";
 import InstructorLogin from "./pages/InstructorLogin";
@@ -100,6 +102,15 @@ function AppRoutes() {
   return (
     <Switch>
       <Route path="/login" component={AdminLogin} />
+      <Route path="/forgot-password">
+        <ForgotPassword userType="admin" />
+      </Route>
+      <Route path="/reset-password">
+        <ResetPassword />
+      </Route>
+      <Route path="/student/forgot-password">
+        <ForgotPassword userType="student" />
+      </Route>
       <Route path="/instructor/login" component={InstructorLogin} />
       <Route path="/instructor">
         <InstructorAuthGuard>

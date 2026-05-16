@@ -15,3 +15,4 @@ export * from "./admin_users";
 export * from "./notification";
 export * from "./super_admins";
 export * from "./plan_pricing";
+export * from "./password_reset_tokens";

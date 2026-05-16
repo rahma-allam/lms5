@@ -3,7 +3,7 @@ import { useAdminAuth } from "@/lib/adminAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { GraduationCap, Lock, Mail, Loader2 } from "lucide-react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 
 export default function AdminLogin() {
   const { login } = useAdminAuth();
@@ -69,6 +69,15 @@ export default function AdminLogin() {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Signing in...</> : "Sign In"}
             </Button>
+
+            <div className="text-center">
+              <Link
+                href={`/forgot-password${localStorage.getItem("tenant_slug") ? `?tenant=${localStorage.getItem("tenant_slug")}` : ""}`}
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
+              >
+                Forgot password?
+              </Link>
+            </div>
           </form>
         </div>
       </div>
