@@ -10,7 +10,7 @@ import { UserPlus, Mail, Lock, Phone, User, Loader2, GraduationCap, AlertCircle 
 import Navbar from "@/components/storefront/Navbar";
 
 export default function RegisterPage() {
-  const { t, lang } = useI18n();
+  const { t, language } = useI18n();
   const { register } = useAuth();
   const [, navigate] = useLocation();
   const [form, setForm] = useState({ name: "", email: "", password: "", phone: "" });
@@ -64,7 +64,7 @@ export default function RegisterPage() {
                   <User className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input id="name" required value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    placeholder={lang === "ar" ? "محمد أحمد" : "John Doe"} className="ps-9" />
+                    placeholder={language === "ar" ? "محمد أحمد" : "John Doe"} className="ps-9" />
                 </div>
               </div>
 

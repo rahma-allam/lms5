@@ -10,7 +10,7 @@ import { Lock, Mail, Loader2, GraduationCap, AlertCircle } from "lucide-react";
 import Navbar from "@/components/storefront/Navbar";
 
 export default function LoginPage() {
-  const { t, lang } = useI18n();
+  const { t, language } = useI18n();
   const { login } = useAuth();
   const [, navigate] = useLocation();
   const [email, setEmail] = useState("");

@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import Navbar from "@/components/storefront/Navbar";
 
 export default function CertificatePage() {
-  const { t, lang } = useI18n();
+  const { t, language } = useI18n();
   const [certNumber, setCertNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
@@ -37,10 +37,10 @@ export default function CertificatePage() {
             <Award className="w-8 h-8 text-primary" />
           </div>
           <h1 className="text-3xl font-bold mb-3">
-            {lang === "ar" ? "التحقق من شهادة الإتمام" : "Certificate Verification"}
+            {language === "ar" ? "التحقق من شهادة الإتمام" : "Certificate Verification"}
           </h1>
           <p className="text-muted-foreground">
-            {lang === "ar"
+            {language === "ar"
               ? "أدخل رقم الشهادة للتحقق من صحتها"
               : "Enter the certificate number to verify its authenticity"}
           </p>
@@ -58,7 +58,7 @@ export default function CertificatePage() {
               />
             </div>
             <Button type="submit" disabled={loading || !certNumber.trim()}>
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : (lang === "ar" ? "تحقق" : "Verify")}
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : (language === "ar" ? "تحقق" : "Verify")}
             </Button>
           </form>
 
@@ -76,18 +76,18 @@ export default function CertificatePage() {
                 {result.valid ? (
                   <>
                     <p className="font-bold text-emerald-700 dark:text-emerald-400">
-                      {lang === "ar" ? "شهادة صحيحة ✓" : "Valid Certificate ✓"}
+                      {language === "ar" ? "شهادة صحيحة ✓" : "Valid Certificate ✓"}
                     </p>
                     <div className="mt-3 space-y-1.5">
-                      <p className="text-sm"><span className="text-muted-foreground">{lang === "ar" ? "الطالب:" : "Student:"}</span> <span className="font-medium">{result.studentName}</span></p>
-                      <p className="text-sm"><span className="text-muted-foreground">{lang === "ar" ? "الدورة:" : "Course:"}</span> <span className="font-medium">{lang === "ar" && result.courseTitleAr ? result.courseTitleAr : result.courseTitle}</span></p>
-                      <p className="text-sm"><span className="text-muted-foreground">{lang === "ar" ? "رقم الشهادة:" : "Certificate #:"}</span> <span className="font-mono font-medium">{result.certificateNumber}</span></p>
-                      <p className="text-sm"><span className="text-muted-foreground">{lang === "ar" ? "تاريخ الإصدار:" : "Issued:"}</span> <span className="font-medium">{new Date(result.issuedAt).toLocaleDateString()}</span></p>
+                      <p className="text-sm"><span className="text-muted-foreground">{language === "ar" ? "الطالب:" : "Student:"}</span> <span className="font-medium">{result.studentName}</span></p>
+                      <p className="text-sm"><span className="text-muted-foreground">{language === "ar" ? "الدورة:" : "Course:"}</span> <span className="font-medium">{language === "ar" && result.courseTitleAr ? result.courseTitleAr : result.courseTitle}</span></p>
+                      <p className="text-sm"><span className="text-muted-foreground">{language === "ar" ? "رقم الشهادة:" : "Certificate #:"}</span> <span className="font-mono font-medium">{result.certificateNumber}</span></p>
+                      <p className="text-sm"><span className="text-muted-foreground">{language === "ar" ? "تاريخ الإصدار:" : "Issued:"}</span> <span className="font-medium">{new Date(result.issuedAt).toLocaleDateString()}</span></p>
                     </div>
                   </>
                 ) : (
                   <p className="font-bold text-red-700 dark:text-red-400">
-                    {lang === "ar" ? "الشهادة غير موجودة أو غير صحيحة" : "Certificate not found or invalid"}
+                    {language === "ar" ? "الشهادة غير موجودة أو غير صحيحة" : "Certificate not found or invalid"}
                   </p>
                 )}
               </div>

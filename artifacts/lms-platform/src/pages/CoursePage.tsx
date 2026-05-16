@@ -26,13 +26,13 @@ function formatDuration(mins: number) {
   return m === 0 ? `${h}h` : `${h}h ${m}m`;
 }
 
-function SessionCard({ session, lang, t }: { session: any; lang: string; t: (k: string) => string }) {
+function SessionCard({ session, language, t }: { session: any; language: string; t: (k: string) => string }) {
   const now = new Date();
   const scheduled = new Date(session.scheduledAt);
   const isPast = scheduled < now;
   const isToday = scheduled.toDateString() === now.toDateString();
 
-  const title = lang === "ar" ? (session.titleAr || session.title) : session.title;
+  const title = language === "ar" ? (session.titleAr || session.title) : session.title;
 
   return (
     <motion.div
@@ -71,13 +71,13 @@ function SessionCard({ session, lang, t }: { session: any; lang: string; t: (k: 
         <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
           <span className="flex items-center gap-1">
             <Calendar className="w-3.5 h-3.5" />
-            {scheduled.toLocaleDateString(lang === "ar" ? "ar-EG" : "en-US", {
+            {scheduled.toLocaleDateString(language === "ar" ? "ar-EG" : "en-US", {
               weekday: "short", year: "numeric", month: "short", day: "numeric"
             })}
           </span>
           <span className="flex items-center gap-1">
             <Clock className="w-3.5 h-3.5" />
-            {scheduled.toLocaleTimeString(lang === "ar" ? "ar-EG" : "en-US", {
+            {scheduled.toLocaleTimeString(language === "ar" ? "ar-EG" : "en-US", {
               hour: "2-digit", minute: "2-digit"
             })}
           </span>
@@ -99,7 +99,7 @@ function SessionCard({ session, lang, t }: { session: any; lang: string; t: (k: 
 
 export default function CoursePage() {
   const { id } = useParams<{ id: string }>();
-  const { t, lang } = useI18n();
+  const { t, language } = useI18n();
   const [, navigate] = useLocation();
   const { trackPurchase: _trackPurchase, trackViewContent, trackInitiateCheckout } = usePixelTracking();
   const [openModules, setOpenModules] = useState<Record<number, boolean>>({});
@@ -137,7 +137,7 @@ export default function CoursePage() {
     }
   };
 
-  const courseTitle = lang === "en"
+  const courseTitle = language === "en"
     ? (course?.title ?? "")
     : (course?.titleAr || course?.title || "");
 
@@ -175,7 +175,7 @@ export default function CoursePage() {
               onClick={() => navigate("/")}
               className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground text-sm mb-6 transition-colors"
             >
-              <ChevronLeft className={cn("w-4 h-4", lang === "ar" && "rotate-180")} />
+              <ChevronLeft className={cn("w-4 h-4", language === "ar" && "rotate-180")} />
               {t("course.back")}
             </button>
 
@@ -262,7 +262,7 @@ export default function CoursePage() {
               ) : (
                 <div className="space-y-3">
                   {sessions.map((session: any) => (
-                    <SessionCard key={session.id} session={session} lang={lang} t={t} />
+                    <SessionCard key={session.id} session={session} language={language} t={t} />
                   ))}
                 </div>
               )}
@@ -284,7 +284,7 @@ export default function CoursePage() {
               ) : (
                 course.modules?.map((module: any, idx: number) => {
                   const isOpen = openModules[module.id] ?? idx === 0;
-                  const moduleTitle = lang === "ar" ? (module.titleAr || module.title) : module.title;
+                  const moduleTitle = language === "ar" ? (module.titleAr || module.title) : module.title;
                   return (
                     <motion.div
                       key={module.id}
@@ -309,14 +309,14 @@ export default function CoursePage() {
                         </div>
                         {isOpen
                           ? <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
-                          : <ChevronRight className={cn("w-4 h-4 text-muted-foreground shrink-0", lang === "ar" && "rotate-180")} />
+                          : <ChevronRight className={cn("w-4 h-4 text-muted-foreground shrink-0", language === "ar" && "rotate-180")} />
                         }
                       </button>
 
                       {isOpen && module.lessons?.length > 0 && (
                         <div className="border-t border-border divide-y divide-border">
                           {module.lessons.map((lesson: any, lessonIdx: number) => {
-                            const lessonTitle = lang === "ar" ? (lesson.titleAr || lesson.title) : lesson.title;
+                            const lessonTitle = language === "ar" ? (lesson.titleAr || lesson.title) : lesson.title;
                             return (
                               <div
                                 key={lesson.id}

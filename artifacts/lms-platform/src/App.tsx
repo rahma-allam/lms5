@@ -237,6 +237,25 @@ function App() {
     );
   }
 
+  if (isStorefrontPath()) {
+    return (
+      <TenantProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <QueryClientProvider client={queryClient}>
+            <I18nProvider>
+              <AuthProvider>
+                <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+                  <StorefrontRoutes />
+                </WouterRouter>
+                <Toaster richColors position="top-right" />
+              </AuthProvider>
+            </I18nProvider>
+          </QueryClientProvider>
+        </ThemeProvider>
+      </TenantProvider>
+    );
+  }
+
   return (
     <TenantProvider>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>

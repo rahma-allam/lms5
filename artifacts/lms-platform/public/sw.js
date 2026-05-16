@@ -1,4 +1,4 @@
-const CACHE_NAME = "lms-pwa-v3";
+const CACHE_NAME = "lms-pwa-v4";
 
 self.addEventListener("push", (event) => {
   let data = { title: "LMS Platform", body: "لديك إشعار جديد" };
@@ -68,12 +68,14 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
 
   if (request.method !== "GET") return;
-
   if (url.pathname.startsWith("/api/")) return;
+  if (url.pathname.startsWith("/@")) return;
+  if (url.pathname.startsWith("/src/")) return;
+  if (url.pathname.startsWith("/node_modules/")) return;
 
   if (request.destination === "document") {
     event.respondWith(
-      fetch(request).catch(() =>
+      fetch(request, { cache: "no-store" }).catch(() =>
         caches.match("/offline.html").then(
           (cached) => cached ?? new Response("<h1>أنت غير متصل بالإنترنت</h1>", {
             headers: { "Content-Type": "text/html; charset=utf-8" },

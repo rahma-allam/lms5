@@ -20,7 +20,7 @@ function fetchWithAuth(url: string) {
 }
 
 // ── NotificationBell ────────────────────────────────────────────────────────
-function NotificationBell({ lang }: { lang: string }) {
+function NotificationBell({ language }: { language: string }) {
   const [open, setOpen] = useState(false);
   const ref             = useRef<HTMLDivElement>(null);
   const qc              = useQueryClient();
@@ -84,7 +84,7 @@ function NotificationBell({ lang }: { lang: string }) {
   return (
     <div ref={ref} className="relative">
       <Button variant="ghost" size="icon" className="rounded-full relative"
-        onClick={() => setOpen((v) => !v)} title={lang === "ar" ? "الإشعارات" : "Notifications"}>
+        onClick={() => setOpen((v) => !v)} title={language === "ar" ? "الإشعارات" : "Notifications"}>
         <Bell className="h-5 w-5" />
         {unread > 0 && (
           <span className="absolute -top-0.5 -end-0.5 min-w-[18px] h-[18px] rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center px-1 leading-none">
@@ -96,20 +96,20 @@ function NotificationBell({ lang }: { lang: string }) {
       {open && (
         <div className={cn(
           "absolute top-12 z-50 w-80 bg-popover border border-border rounded-2xl shadow-xl overflow-hidden",
-          lang === "ar" ? "left-0" : "right-0"
+          language === "ar" ? "left-0" : "right-0"
         )}>
           {/* header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
             <span className="font-semibold text-sm flex items-center gap-1.5">
               <Megaphone className="w-4 h-4 text-primary" />
-              {lang === "ar" ? "الإشعارات" : "Notifications"}
+              {language === "ar" ? "الإشعارات" : "Notifications"}
               {unread > 0 && <span className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">{unread}</span>}
             </span>
             {unread > 0 && (
               <button onClick={() => markAll.mutate()}
                 className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors">
                 <CheckCheck className="w-3.5 h-3.5" />
-                {lang === "ar" ? "قراءة الكل" : "Mark all read"}
+                {language === "ar" ? "قراءة الكل" : "Mark all read"}
               </button>
             )}
           </div>
@@ -119,7 +119,7 @@ function NotificationBell({ lang }: { lang: string }) {
             {notifications.length === 0 ? (
               <div className="py-10 text-center text-muted-foreground text-sm">
                 <Bell className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                <p>{lang === "ar" ? "لا توجد إشعارات" : "No notifications yet"}</p>
+                <p>{language === "ar" ? "لا توجد إشعارات" : "No notifications yet"}</p>
               </div>
             ) : (
               notifications.map((n: any) => (
@@ -132,16 +132,16 @@ function NotificationBell({ lang }: { lang: string }) {
                     <span className="text-base mt-0.5 shrink-0">{typeIcon[n.type] ?? "📢"}</span>
                     <div className="flex-1 min-w-0">
                       <p className={cn("text-sm truncate", !n.isRead && "font-semibold")}>
-                        {lang === "ar" ? (n.titleAr || n.title) : n.title}
+                        {language === "ar" ? (n.titleAr || n.title) : n.title}
                       </p>
-                      {(lang === "ar" ? (n.bodyAr || n.body) : n.body) && (
+                      {(language === "ar" ? (n.bodyAr || n.body) : n.body) && (
                         <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                          {lang === "ar" ? (n.bodyAr || n.body) : n.body}
+                          {language === "ar" ? (n.bodyAr || n.body) : n.body}
                         </p>
                       )}
                       <p className="text-[10px] text-muted-foreground/70 mt-1">
                         {new Date(n.createdAt).toLocaleDateString(
-                          lang === "ar" ? "ar-EG" : "en-US",
+                          language === "ar" ? "ar-EG" : "en-US",
                           { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }
                         )}
                       </p>
@@ -159,7 +159,7 @@ function NotificationBell({ lang }: { lang: string }) {
 }
 
 export default function Navbar() {
-  const { lang, setLang, t } = useI18n();
+  const { language, setLanguage , t} = useI18n();
   const { theme, setTheme } = useTheme();
   const { user, logout, isAuthenticated } = useAuth();
   const [scrolled, setScrolled] = useState(false);
@@ -174,7 +174,7 @@ export default function Navbar() {
     staleTime: 60_000,
   });
 
-  const academyName = lang === "ar" 
+  const academyName = language === "ar" 
   ? (settings?.academyNameAr || settings?.academyName || "EduAcademy Pro")
   : (settings?.academyName || "EduAcademy Pro");
   const logoUrl = settings?.logoUrl;
@@ -238,7 +238,7 @@ export default function Navbar() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => setLang(lang === "en" ? "ar" : "en")}
+            onClick={() => setLanguage(language === "en" ? "ar" : "en")}
             className="rounded-full"
             title="Toggle Language"
           >
@@ -261,7 +261,7 @@ export default function Navbar() {
 
           {/* 🔔 Bell — بس للطالب المسجّل */}
           {isAuthenticated && user && (
-            <NotificationBell lang={lang} />
+            <NotificationBell language={language} />
           )}
 
           {isAuthenticated && user ? (
@@ -275,7 +275,7 @@ export default function Navbar() {
                 <span className="max-w-28 truncate">{user.name}</span>
               </Button>
               <Button variant="outline" size="sm" onClick={handleLogout}>
-                {lang === "ar" ? "خروج" : "Logout"}
+                {language === "ar" ? "خروج" : "Logout"}
               </Button>
             </div>
           ) : (
@@ -290,7 +290,7 @@ export default function Navbar() {
                 }}
               >
                 <LogIn className="w-4 h-4" />
-                <span className="hidden xs:inline">{lang === "ar" ? "دخول" : "Login"}</span>
+                <span className="hidden xs:inline">{language === "ar" ? "دخول" : "Login"}</span>
               </Button>
 
               <Button
@@ -301,7 +301,7 @@ export default function Navbar() {
                   navigate(tenant ? `/register?tenant=${tenant}` : "/register");
                 }}
               >
-                {lang === "ar" ? "ابدأ الآن" : "Join Now"}
+                {language === "ar" ? "ابدأ الآن" : "Join Now"}
               </Button>
             </div>
           )}

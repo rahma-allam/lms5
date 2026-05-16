@@ -48,7 +48,7 @@ function fetchWithStudentAuth(url: string, options?: RequestInit) {
 }
 
 function PaymentStatusBanner({ paymentStatus, status }: { paymentStatus: string; status: string }) {
-  const { lang } = useI18n();
+  const { language } = useI18n();
   if (status === "active") return null;
 
   if (paymentStatus === "pending" || status === "pending") {
@@ -57,10 +57,10 @@ function PaymentStatusBanner({ paymentStatus, status }: { paymentStatus: string;
         <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
         <div>
           <p className="font-semibold text-amber-700 dark:text-amber-400 text-sm">
-            {lang === "ar" ? "طلبك قيد المراجعة" : "Your payment is under review"}
+            {language === "ar" ? "طلبك قيد المراجعة" : "Your payment is under review"}
           </p>
           <p className="text-xs text-amber-600 dark:text-amber-500 mt-0.5">
-            {lang === "ar"
+            {language === "ar"
               ? "سيتم تفعيل الكورس خلال 24 ساعة بعد التحقق من التحويل."
               : "Your course will be activated within 24 hours once payment is verified."}
           </p>
@@ -75,10 +75,10 @@ function PaymentStatusBanner({ paymentStatus, status }: { paymentStatus: string;
         <XCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
         <div>
           <p className="font-semibold text-red-700 dark:text-red-400 text-sm">
-            {lang === "ar" ? "تم رفض الدفعة" : "Payment was rejected"}
+            {language === "ar" ? "تم رفض الدفعة" : "Payment was rejected"}
           </p>
           <p className="text-xs text-red-600 dark:text-red-500 mt-0.5">
-            {lang === "ar"
+            {language === "ar"
               ? "يرجى التواصل مع الدعم أو إعادة المحاولة."
               : "Please contact support or try enrolling again."}
           </p>
@@ -91,7 +91,7 @@ function PaymentStatusBanner({ paymentStatus, status }: { paymentStatus: string;
 }
 
 function QuizWidget({ lessonId, studentId }: { lessonId: number; studentId: number }) {
-  const { lang } = useI18n();
+  const { language } = useI18n();
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [result, setResult] = useState<{ score: number; passed: boolean; correctAnswers: number; totalQuestions: number; passingScore: number } | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -168,7 +168,7 @@ function QuizWidget({ lessonId, studentId }: { lessonId: number; studentId: numb
       <div className="flex items-center gap-2">
         <ClipboardList className="w-4 h-4 text-primary shrink-0" />
         <span className="text-sm font-semibold">{quiz.title}</span>
-        <span className="text-xs text-muted-foreground ms-auto">{lang === "ar" ? "درجة النجاح:" : "Pass:"} {quiz.passingScore}%</span>
+        <span className="text-xs text-muted-foreground ms-auto">{language === "ar" ? "درجة النجاح:" : "Pass:"} {quiz.passingScore}%</span>
       </div>
 
       {displayResult ? (
@@ -181,11 +181,11 @@ function QuizWidget({ lessonId, studentId }: { lessonId: number; studentId: numb
           {displayResult.passed ? <Trophy className="w-6 h-6 mx-auto" /> : <XCircle className="w-6 h-6 mx-auto" />}
           <p className="font-bold text-lg">{displayResult.score}%</p>
           <p className="text-sm">{displayResult.passed
-            ? (lang === "ar" ? "اجتزت الاختبار!" : "Quiz Passed!")
-            : (lang === "ar" ? "لم تجتز. حاول مرة أخرى" : "Not passed. Try again")}</p>
+            ? (language === "ar" ? "اجتزت الاختبار!" : "Quiz Passed!")
+            : (language === "ar" ? "لم تجتز. حاول مرة أخرى" : "Not passed. Try again")}</p>
           {!displayResult.passed && (
             <Button size="sm" variant="outline" className="mt-2" onClick={() => { setResult(null); setAnswers({}); }}>
-              {lang === "ar" ? "إعادة المحاولة" : "Retry"}
+              {language === "ar" ? "إعادة المحاولة" : "Retry"}
             </Button>
           )}
         </div>
@@ -215,7 +215,7 @@ function QuizWidget({ lessonId, studentId }: { lessonId: number; studentId: numb
             onClick={handleSubmit}>
             {submitting
               ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              : (lang === "ar" ? "تسليم الإجابات" : "Submit Answers")}
+              : (language === "ar" ? "تسليم الإجابات" : "Submit Answers")}
           </Button>
         </div>
       )}
@@ -224,16 +224,16 @@ function QuizWidget({ lessonId, studentId }: { lessonId: number; studentId: numb
 }
 
 function LessonItem({
-  lesson, index, isUnlocked, lang, studentId,
+  lesson, index, isUnlocked, language, studentId,
   onPlay, completedIds, onComplete,
 }: {
-  lesson: any; index: number; isUnlocked: boolean; lang: string;
+  lesson: any; index: number; isUnlocked: boolean; language: string;
   studentId: number;
   onPlay: (url: string, title: string) => void;
   completedIds: Set<number>;
   onComplete: (lessonId: number) => void;
 }) {
-  const title = lang === "ar" ? (lesson.titleAr || lesson.title) : lesson.title;
+  const title = language === "ar" ? (lesson.titleAr || lesson.title) : lesson.title;
   const isVideo = lesson.type === "video" && lesson.videoUrl;
   const canClick = isUnlocked && isVideo;
   const isDone = completedIds.has(lesson.id);
@@ -284,7 +284,7 @@ function LessonItem({
         )}
         {isUnlocked && (
           <button onClick={markComplete} disabled={marking || isDone}
-            title={isDone ? (lang === "ar" ? "مكتمل" : "Completed") : (lang === "ar" ? "تحديد كمكتمل" : "Mark complete")}
+            title={isDone ? (language === "ar" ? "مكتمل" : "Completed") : (language === "ar" ? "تحديد كمكتمل" : "Mark complete")}
             className={cn(
               "shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-colors",
               isDone
@@ -315,12 +315,12 @@ function MessagesTab({
   studentId,
   studentName,
   enrollments,
-  lang,
+  language,
 }: {
   studentId: number;
   studentName: string;
   enrollments: any[] | undefined;
-  lang: string;
+  language: string;
 }) {
   // الكورس المختار للمحادثة
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
@@ -387,7 +387,7 @@ function MessagesTab({
       }
     } catch {
       if (initial) {
-        setError(lang === "ar" ? "تعذّر تحميل الرسائل" : "Failed to load messages");
+        setError(language === "ar" ? "تعذّر تحميل الرسائل" : "Failed to load messages");
         setLoading(false);
       }
     }
@@ -458,7 +458,7 @@ function MessagesTab({
     return (
       <div className="bg-card border border-border rounded-2xl flex flex-col items-center justify-center py-16 text-muted-foreground text-sm">
         <MessageCircle className="w-10 h-10 mb-3 opacity-30" />
-        <p>{lang === "ar" ? "يجب التسجيل في كورس أولاً" : "Enroll in a course first"}</p>
+        <p>{language === "ar" ? "يجب التسجيل في كورس أولاً" : "Enroll in a course first"}</p>
       </div>
     );
   }
@@ -475,11 +475,11 @@ function MessagesTab({
               setSelectedCourseId(isNaN(val) ? null : val);
             }}
             className="w-full bg-muted border border-border rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30"
-            dir={lang === "ar" ? "rtl" : "ltr"}
+            dir={language === "ar" ? "rtl" : "ltr"}
           >
             {enrollments.map((enr: any) => (
               <option key={enr.courseId} value={enr.courseId}>
-                {enr.courseTitle || enr.courseTitleAr || (lang === "ar" ? `كورس #${enr.courseId}` : `Course #${enr.courseId}`)}
+                {enr.courseTitle || enr.courseTitleAr || (language === "ar" ? `كورس #${enr.courseId}` : `Course #${enr.courseId}`)}
               </option>
             ))}
           </select>
@@ -490,12 +490,12 @@ function MessagesTab({
       <div className="px-5 py-4 border-b border-border flex items-center gap-2">
         <MessageCircle className="w-4 h-4 text-primary" />
         <span className="font-semibold text-sm">
-          {lang === "ar" ? "رسائل المدرب" : "Instructor Messages"}
+          {language === "ar" ? "رسائل المدرب" : "Instructor Messages"}
         </span>
         {/* نقطة خضراء تدل على الـ polling */}
         <span className="ml-auto flex items-center gap-1.5 text-xs text-emerald-500">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          {lang === "ar" ? "مباشر" : "Live"}
+          {language === "ar" ? "مباشر" : "Live"}
         </span>
       </div>
 
@@ -512,7 +512,7 @@ function MessagesTab({
         {!loading && !error && messages.length === 0 && (
           <div className="text-center py-12 text-muted-foreground text-sm">
             <MessageCircle className="w-10 h-10 mx-auto mb-3 opacity-30" />
-            <p>{lang === "ar" ? "ابدأ محادثة مع مدربك" : "Start a conversation with your instructor"}</p>
+            <p>{language === "ar" ? "ابدأ محادثة مع مدربك" : "Start a conversation with your instructor"}</p>
           </div>
         )}
         {messages.map((msg) => (
@@ -540,7 +540,7 @@ function MessagesTab({
               ))}
               <p className="text-[10px] opacity-60 mt-1">
                 {new Date(msg.createdAt).toLocaleTimeString(
-                  lang === "ar" ? "ar-EG" : "en-US",
+                  language === "ar" ? "ar-EG" : "en-US",
                   { hour: "2-digit", minute: "2-digit" }
                 )}
               </p>
@@ -556,9 +556,9 @@ function MessagesTab({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), send())}
-          placeholder={lang === "ar" ? "اكتب رسالتك..." : "Type a message..."}
+          placeholder={language === "ar" ? "اكتب رسالتك..." : "Type a message..."}
           className="flex-1 bg-muted rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary/30 border border-transparent"
-          dir={lang === "ar" ? "rtl" : "ltr"}
+          dir={language === "ar" ? "rtl" : "ltr"}
           disabled={sending}
         />
         <Button size="sm" onClick={send} disabled={!input.trim() || sending} className="gap-1.5 px-4">
@@ -573,7 +573,7 @@ function MessagesTab({
 }
 
 export default function StudentPortal() {
-  const { t, lang } = useI18n();
+  const { t, language } = useI18n();
   const { user, logout, isLoading: authLoading } = useAuth();
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState<Tab>("overview");
@@ -669,15 +669,15 @@ export default function StudentPortal() {
   }
 
   const tabs: { key: Tab; label: string; icon: typeof User }[] = [
-    { key: "overview",      label: lang === "ar" ? "نظرة عامة" : "Overview",     icon: User },
-    { key: "lessons",       label: lang === "ar" ? "الدروس" : "Lessons",         icon: BookOpen },
-    { key: "my-courses",    label: lang === "ar" ? "كورساتي" : "My Courses",      icon: GraduationCap },
-    { key: "certificates",  label: lang === "ar" ? "شهاداتي" : "Certificates",   icon: Trophy },
-    { key: "payments",      label: lang === "ar" ? "المدفوعات" : "Payments",     icon: CreditCard },
-    { key: "messages",      label: lang === "ar" ? "الرسائل" : "Messages",       icon: MessageCircle },
+    { key: "overview",      label: language === "ar" ? "نظرة عامة" : "Overview",     icon: User },
+    { key: "lessons",       label: language === "ar" ? "الدروس" : "Lessons",         icon: BookOpen },
+    { key: "my-courses",    label: language === "ar" ? "كورساتي" : "My Courses",      icon: GraduationCap },
+    { key: "certificates",  label: language === "ar" ? "شهاداتي" : "Certificates",   icon: Trophy },
+    { key: "payments",      label: language === "ar" ? "المدفوعات" : "Payments",     icon: CreditCard },
+    { key: "messages",      label: language === "ar" ? "الرسائل" : "Messages",       icon: MessageCircle },
   ];
 
-  const courseTitle = lang === "ar"
+  const courseTitle = language === "ar"
     ? (course?.titleAr || course?.title || "")
     : (course?.title || "");
 
@@ -698,7 +698,7 @@ export default function StudentPortal() {
                   {user.name[0].toUpperCase()}
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold">{lang === "ar" ? `مرحباً، ${user.name}` : `Welcome, ${user.name}`}</h1>
+                  <h1 className="text-xl font-bold">{language === "ar" ? `مرحباً، ${user.name}` : `Welcome, ${user.name}`}</h1>
                   <p className="text-sm text-muted-foreground">{user.email}</p>
                   <div className="flex items-center gap-2 mt-1.5">
                     <span className={cn(
@@ -707,12 +707,12 @@ export default function StudentPortal() {
                         ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
                         : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
                     )}>
-                      {isActive ? (lang === "ar" ? "نشط" : "Active") : (lang === "ar" ? "قيد الانتظار" : "Pending")}
+                      {isActive ? (language === "ar" ? "نشط" : "Active") : (language === "ar" ? "قيد الانتظار" : "Pending")}
                     </span>
                     {course && (
                       <span className="text-xs text-muted-foreground truncate max-w-48">
                         {enrollments && enrollments.length > 1
-                          ? `${enrollments.length} ${lang === "ar" ? "كورسات" : "courses"}`
+                          ? `${enrollments.length} ${language === "ar" ? "كورسات" : "courses"}`
                           : courseTitle}
                       </span>
                     )}
@@ -721,7 +721,7 @@ export default function StudentPortal() {
               </div>
               <Button variant="ghost" size="sm" onClick={handleLogout} className="gap-2 text-muted-foreground hover:text-foreground shrink-0">
                 <LogOut className="w-4 h-4" />
-                <span className="hidden sm:inline">{lang === "ar" ? "خروج" : "Logout"}</span>
+                <span className="hidden sm:inline">{language === "ar" ? "خروج" : "Logout"}</span>
               </Button>
             </div>
           </motion.div>
@@ -753,11 +753,11 @@ export default function StudentPortal() {
               <motion.div key="overview" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} className="space-y-4">
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {[
-                    { label: lang === "ar" ? "التقدم" : "Progress", value: `${student?.progress ?? 0}%`, icon: TrendingUp, color: "bg-primary/10 text-primary" },
-                    { label: lang === "ar" ? "الدروس" : "Lessons", value: totalLessons, icon: PlayCircle, color: "bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400" },
+                    { label: language === "ar" ? "التقدم" : "Progress", value: `${student?.progress ?? 0}%`, icon: TrendingUp, color: "bg-primary/10 text-primary" },
+                    { label: language === "ar" ? "الدروس" : "Lessons", value: totalLessons, icon: PlayCircle, color: "bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400" },
                     {
-                      label: lang === "ar" ? "حالة الدفع" : "Payment",
-                      value: student?.paymentStatus === "paid" ? (lang === "ar" ? "مدفوع" : "Paid") : (lang === "ar" ? "معلق" : "Pending"),
+                      label: language === "ar" ? "حالة الدفع" : "Payment",
+                      value: student?.paymentStatus === "paid" ? (language === "ar" ? "مدفوع" : "Paid") : (language === "ar" ? "معلق" : "Pending"),
                       icon: CreditCard,
                       color: student?.paymentStatus === "paid"
                         ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"
@@ -778,7 +778,7 @@ export default function StudentPortal() {
 
                 <div className="bg-card border border-border rounded-2xl p-5">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-medium">{lang === "ar" ? "تقدم الكورس" : "Course Progress"}</span>
+                    <span className="text-sm font-medium">{language === "ar" ? "تقدم الكورس" : "Course Progress"}</span>
                     <span className="text-sm font-bold text-primary">{student?.progress ?? 0}%</span>
                   </div>
                   <div className="h-2.5 bg-muted rounded-full overflow-hidden">
@@ -788,7 +788,7 @@ export default function StudentPortal() {
                   </div>
                   {course && (
                     <p className="text-xs text-muted-foreground mt-3">
-                      {lang === "ar" ? "الكورس المسجّل:" : "Enrolled course:"}{" "}
+                      {language === "ar" ? "الكورس المسجّل:" : "Enrolled course:"}{" "}
                       <span className="font-medium text-foreground">{courseTitle}</span>
                     </p>
                   )}
@@ -798,10 +798,10 @@ export default function StudentPortal() {
                 {enrollments && enrollments.length > 0 ? (
                   <div className="space-y-3">
                     <p className="text-sm font-semibold text-muted-foreground px-1">
-                      {lang === "ar" ? "كوراتي المسجّلة" : "My Enrolled Courses"} ({enrollments.length})
+                      {language === "ar" ? "كوراتي المسجّلة" : "My Enrolled Courses"} ({enrollments.length})
                     </p>
                     {enrollments.map((enroll: any) => {
-                      const ct = lang === "ar" ? (enroll.courseTitleAr || enroll.courseTitle) : enroll.courseTitle;
+                      const ct = language === "ar" ? (enroll.courseTitleAr || enroll.courseTitle) : enroll.courseTitle;
                       const isSelected = (selectedCourseId ?? enrollments[0]?.courseId) === enroll.courseId;
                       const isEnrollActive = enroll.status === "active";
                       return (
@@ -823,13 +823,13 @@ export default function StudentPortal() {
                             <div className="absolute bottom-2 start-3 end-3 flex items-center justify-between gap-2">
                               <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full text-white shrink-0",
                                 enroll.courseType === "live" ? "bg-red-500" : "bg-primary")}>
-                                {enroll.courseType === "live" ? (lang === "ar" ? "مباشر" : "Live") : (lang === "ar" ? "مسجّل" : "Recorded")}
+                                {enroll.courseType === "live" ? (language === "ar" ? "مباشر" : "Live") : (language === "ar" ? "مسجّل" : "Recorded")}
                               </span>
                               <span className={cn("text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0",
                                 isEnrollActive
                                   ? "bg-emerald-500 text-white"
                                   : "bg-amber-500 text-white")}>
-                                {isEnrollActive ? (lang === "ar" ? "نشط" : "Active") : (lang === "ar" ? "معلق" : "Pending")}
+                                {isEnrollActive ? (language === "ar" ? "نشط" : "Active") : (language === "ar" ? "معلق" : "Pending")}
                               </span>
                             </div>
                           </div>
@@ -838,7 +838,7 @@ export default function StudentPortal() {
                             {/* progress bar */}
                             <div className="mb-3">
                               <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                                <span>{lang === "ar" ? "التقدم" : "Progress"}</span>
+                                <span>{language === "ar" ? "التقدم" : "Progress"}</span>
                                 <span className="font-medium text-primary">{enroll.progress ?? 0}%</span>
                               </div>
                               <div className="h-1.5 bg-muted rounded-full overflow-hidden">
@@ -850,7 +850,7 @@ export default function StudentPortal() {
                               onClick={() => { setSelectedCourseId(enroll.courseId); setActiveTab("lessons"); }}
                               disabled={!isEnrollActive}>
                               <PlayCircle className="w-4 h-4" />
-                              {isEnrollActive ? (lang === "ar" ? "ابدأ التعلم" : "Start Learning") : (lang === "ar" ? "في انتظار التفعيل" : "Awaiting Activation")}
+                              {isEnrollActive ? (language === "ar" ? "ابدأ التعلم" : "Start Learning") : (language === "ar" ? "في انتظار التفعيل" : "Awaiting Activation")}
                             </Button>
                           </div>
                         </div>
@@ -862,9 +862,9 @@ export default function StudentPortal() {
                 ) : (
                   <div className="bg-card border border-dashed border-border rounded-2xl p-10 text-center">
                     <GraduationCap className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-                    <p className="font-medium text-sm">{lang === "ar" ? "لم تسجّل في أي كورس بعد" : "Not enrolled in any course yet"}</p>
+                    <p className="font-medium text-sm">{language === "ar" ? "لم تسجّل في أي كورس بعد" : "Not enrolled in any course yet"}</p>
                     <Button variant="outline" className="mt-4 gap-2" onClick={() => navigate("/")}>
-                      {lang === "ar" ? "استعرض الكورسات" : "Browse Courses"}
+                      {language === "ar" ? "استعرض الكورسات" : "Browse Courses"}
                     </Button>
                   </div>
                 )}
@@ -879,7 +879,7 @@ export default function StudentPortal() {
                 {enrollments && enrollments.length > 1 && (
                   <div className="flex gap-2 flex-wrap">
                     {enrollments.map((enroll: any) => {
-                      const ct = lang === "ar"
+                      const ct = language === "ar"
                         ? (enroll.courseTitleAr || enroll.courseTitle)
                         : enroll.courseTitle;
                       const isSelected = activeCourseId === enroll.courseId;
@@ -902,7 +902,7 @@ export default function StudentPortal() {
                 {!course && !courseLoading && (
                   <div className="bg-card border border-dashed border-border rounded-2xl p-10 text-center">
                     <BookOpen className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-                    <p className="text-sm text-muted-foreground">{lang === "ar" ? "لم تسجّل في أي كورس بعد" : "No course enrolled yet"}</p>
+                    <p className="text-sm text-muted-foreground">{language === "ar" ? "لم تسجّل في أي كورس بعد" : "No course enrolled yet"}</p>
                   </div>
                 )}
 
@@ -910,7 +910,7 @@ export default function StudentPortal() {
                   <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-4">
                     <Lock className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
                     <p className="text-sm text-amber-700 dark:text-amber-400">
-                      {lang === "ar" ? "سيتم فتح الدروس بعد تأكيد الدفع." : "Lessons will unlock once your payment is confirmed."}
+                      {language === "ar" ? "سيتم فتح الدروس بعد تأكيد الدفع." : "Lessons will unlock once your payment is confirmed."}
                     </p>
                   </div>
                 )}
@@ -932,13 +932,13 @@ export default function StudentPortal() {
                     {((course as any).sessions ?? []).length === 0 ? (
                       <div className="text-center py-12 text-muted-foreground border border-dashed border-border rounded-2xl">
                         <Calendar className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                        <p className="text-sm">{lang === "ar" ? "لا توجد جلسات مجدولة بعد" : "No sessions scheduled yet."}</p>
+                        <p className="text-sm">{language === "ar" ? "لا توجد جلسات مجدولة بعد" : "No sessions scheduled yet."}</p>
                       </div>
                     ) : (
                       (course as any).sessions.map((session: any) => {
                         const scheduled = new Date(session.scheduledAt);
                         const isPast = scheduled < new Date();
-                        const title = lang === "ar" ? (session.titleAr || session.title) : session.title;
+                        const title = language === "ar" ? (session.titleAr || session.title) : session.title;
                         return (
                           <div key={session.id} className={cn("bg-card border rounded-2xl p-5 flex items-center gap-4", isPast ? "opacity-60 border-border" : "border-primary/30")}>
                             <div className={cn("w-14 h-14 rounded-xl flex flex-col items-center justify-center text-white font-bold shrink-0", isPast ? "bg-muted text-muted-foreground" : "bg-primary")}>
@@ -949,7 +949,7 @@ export default function StudentPortal() {
                               <p className="font-semibold text-sm">{title}</p>
                               <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
                                 <Clock className="w-3 h-3" />
-                                {scheduled.toLocaleTimeString(lang === "ar" ? "ar-EG" : "en-US", { hour: "2-digit", minute: "2-digit" })}
+                                {scheduled.toLocaleTimeString(language === "ar" ? "ar-EG" : "en-US", { hour: "2-digit", minute: "2-digit" })}
                                 <span>·</span>
                                 <Video className="w-3 h-3" />
                                 {session.durationMinutes}m
@@ -974,12 +974,12 @@ export default function StudentPortal() {
                     {(course.modules ?? []).length === 0 ? (
                       <div className="text-center py-12 text-muted-foreground border border-dashed border-border rounded-2xl">
                         <BookOpen className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                        <p className="text-sm">{lang === "ar" ? "محتوى الكورس قريباً" : "Course content coming soon."}</p>
+                        <p className="text-sm">{language === "ar" ? "محتوى الكورس قريباً" : "Course content coming soon."}</p>
                       </div>
                     ) : (
                       (course.modules ?? []).map((module: any, idx: number) => {
                         const isOpen = openModules[module.id] ?? idx === 0;
-                        const moduleTitle = lang === "ar" ? (module.titleAr || module.title) : module.title;
+                        const moduleTitle = language === "ar" ? (module.titleAr || module.title) : module.title;
                         return (
                           <div key={module.id} className="bg-card border border-border rounded-2xl overflow-hidden">
                             <button onClick={() => toggleModule(module.id)}
@@ -987,17 +987,17 @@ export default function StudentPortal() {
                               <div className="flex items-center gap-3">
                                 <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-xs font-bold text-primary shrink-0">{idx + 1}</div>
                                 <span className="font-semibold text-start">{moduleTitle}</span>
-                                <span className="text-xs text-muted-foreground hidden sm:inline">{module.lessons?.length ?? 0} {lang === "ar" ? "دروس" : "lessons"}</span>
+                                <span className="text-xs text-muted-foreground hidden sm:inline">{module.lessons?.length ?? 0} {language === "ar" ? "دروس" : "lessons"}</span>
                               </div>
                               {isOpen
                                 ? <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
-                                : <ChevronRight className={cn("w-4 h-4 text-muted-foreground shrink-0", lang === "ar" && "rotate-180")} />}
+                                : <ChevronRight className={cn("w-4 h-4 text-muted-foreground shrink-0", language === "ar" && "rotate-180")} />}
                             </button>
                             {isOpen && (module.lessons ?? []).length > 0 && (
                               <div className="border-t border-border">
                                 {module.lessons.map((lesson: any, li: number) => (
                                   <div key={lesson.id}>
-                                    <LessonItem lesson={lesson} index={li} isUnlocked={isActive} lang={lang}
+                                    <LessonItem lesson={lesson} index={li} isUnlocked={isActive} language={language}
                                       studentId={user.id} onPlay={(url, title) => setActiveVideo({ url, title })}
                                       completedIds={completedIds} onComplete={handleLessonComplete} />
                                     {isActive && (
@@ -1026,7 +1026,7 @@ export default function StudentPortal() {
                 ) : payments.length === 0 ? (
                   <div className="bg-card border border-dashed border-border rounded-2xl p-10 text-center">
                     <CreditCard className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-                    <p className="text-sm text-muted-foreground">{lang === "ar" ? "لا توجد مدفوعات بعد" : "No payment records yet"}</p>
+                    <p className="text-sm text-muted-foreground">{language === "ar" ? "لا توجد مدفوعات بعد" : "No payment records yet"}</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -1043,7 +1043,7 @@ export default function StudentPortal() {
                             {p.courseName && <p className="text-sm font-medium">{p.courseName}</p>}
                             <p className="text-xs text-muted-foreground flex items-center gap-1">
                               <Calendar className="w-3 h-3" />
-                              {new Date(p.createdAt).toLocaleDateString(lang === "ar" ? "ar-EG" : "en-US", { year: "numeric", month: "short", day: "numeric" })}
+                              {new Date(p.createdAt).toLocaleDateString(language === "ar" ? "ar-EG" : "en-US", { year: "numeric", month: "short", day: "numeric" })}
                             </p>
                             {p.notes && <p className="text-xs text-muted-foreground italic">{p.notes}</p>}
                           </div>
@@ -1053,7 +1053,7 @@ export default function StudentPortal() {
                               <a href={p.receiptUrl} target="_blank" rel="noopener noreferrer"
                                 className="text-xs text-primary hover:underline flex items-center gap-1 justify-end mt-1">
                                 <ExternalLink className="w-3 h-3" />
-                                {lang === "ar" ? "الإيصال" : "Receipt"}
+                                {language === "ar" ? "الإيصال" : "Receipt"}
                               </a>
                             )}
                           </div>
@@ -1063,15 +1063,15 @@ export default function StudentPortal() {
                             <AlertCircle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                             <p className="text-xs text-muted-foreground">
                               {p.status === "approved"
-                                ? (lang === "ar" ? "تمت الموافقة على الدفعة" : "Payment approved — course activation in progress")
-                                : (lang === "ar" ? "قيد المراجعة من قِبل الإدارة" : "Under admin review")}
+                                ? (language === "ar" ? "تمت الموافقة على الدفعة" : "Payment approved — course activation in progress")
+                                : (language === "ar" ? "قيد المراجعة من قِبل الإدارة" : "Under admin review")}
                             </p>
                           </div>
                         )}
                         {p.status === "completed" && (
                           <div className="mt-3 pt-3 border-t border-border flex items-center gap-2">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                            <p className="text-xs text-muted-foreground">{lang === "ar" ? "تم الدفع بنجاح، الكورس مفعّل" : "Payment complete — course is active"}</p>
+                            <p className="text-xs text-muted-foreground">{language === "ar" ? "تم الدفع بنجاح، الكورس مفعّل" : "Payment complete — course is active"}</p>
                           </div>
                         )}
                       </div>
@@ -1087,9 +1087,9 @@ export default function StudentPortal() {
                 {(!enrollments || enrollments.length === 0) ? (
                   <div className="bg-card border border-dashed border-border rounded-2xl p-12 text-center">
                     <GraduationCap className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-                    <p className="font-medium text-sm text-muted-foreground">{lang === "ar" ? "لم تسجّل في أي كورس بعد" : "No enrollments yet"}</p>
+                    <p className="font-medium text-sm text-muted-foreground">{language === "ar" ? "لم تسجّل في أي كورس بعد" : "No enrollments yet"}</p>
                     <button className="mt-4 text-sm text-primary underline" onClick={() => navigate("/")}>
-                      {lang === "ar" ? "استعرض الكورسات" : "Browse Courses"}
+                      {language === "ar" ? "استعرض الكورسات" : "Browse Courses"}
                     </button>
                   </div>
                 ) : (
@@ -1101,18 +1101,18 @@ export default function StudentPortal() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold truncate">
-                            {lang === "ar" ? (enroll.course?.titleAr || enroll.course?.title || `Course #${enroll.courseId}`) : (enroll.course?.title || `Course #${enroll.courseId}`)}
+                            {language === "ar" ? (enroll.course?.titleAr || enroll.course?.title || `Course #${enroll.courseId}`) : (enroll.course?.title || `Course #${enroll.courseId}`)}
                           </p>
                           <p className="text-xs text-muted-foreground mt-0.5">
-                            {lang === "ar" ? "تاريخ التسجيل:" : "Enrolled:"}{" "}
-                            {enroll.enrolledAt ? new Date(enroll.enrolledAt).toLocaleDateString(lang === "ar" ? "ar-EG" : "en-US") : "—"}
+                            {language === "ar" ? "تاريخ التسجيل:" : "Enrolled:"}{" "}
+                            {enroll.enrolledAt ? new Date(enroll.enrolledAt).toLocaleDateString(language === "ar" ? "ar-EG" : "en-US") : "—"}
                           </p>
                         </div>
                         <span className={cn(
                           "text-[10px] font-semibold px-2.5 py-1 rounded-full shrink-0",
                           enroll.status === "active" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" : "bg-muted text-muted-foreground"
                         )}>
-                          {enroll.status === "active" ? (lang === "ar" ? "نشط" : "Active") : (lang === "ar" ? "معلق" : "Pending")}
+                          {enroll.status === "active" ? (language === "ar" ? "نشط" : "Active") : (language === "ar" ? "معلق" : "Pending")}
                         </span>
                       </div>
                     ))}
@@ -1127,8 +1127,8 @@ export default function StudentPortal() {
                 {(!myCerts || myCerts.length === 0) ? (
                   <div className="bg-card border border-dashed border-border rounded-2xl p-12 text-center">
                     <Trophy className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-                    <p className="font-medium text-sm text-muted-foreground">{lang === "ar" ? "لا توجد شهادات بعد" : "No certificates yet"}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{lang === "ar" ? "أتمم الكورس بنجاح لتحصل على شهادتك" : "Complete a course to earn your certificate"}</p>
+                    <p className="font-medium text-sm text-muted-foreground">{language === "ar" ? "لا توجد شهادات بعد" : "No certificates yet"}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{language === "ar" ? "أتمم الكورس بنجاح لتحصل على شهادتك" : "Complete a course to earn your certificate"}</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1140,27 +1140,27 @@ export default function StudentPortal() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="font-bold text-sm truncate">
-                              {lang === "ar" ? (cert.course?.titleAr || cert.course?.title || `Course #${cert.courseId}`) : (cert.course?.title || `Course #${cert.courseId}`)}
+                              {language === "ar" ? (cert.course?.titleAr || cert.course?.title || `Course #${cert.courseId}`) : (cert.course?.title || `Course #${cert.courseId}`)}
                             </p>
                             <p className="text-xs text-muted-foreground mt-0.5">
-                              {lang === "ar" ? "تاريخ الإصدار:" : "Issued:"}{" "}
-                              {cert.issuedAt ? new Date(cert.issuedAt).toLocaleDateString(lang === "ar" ? "ar-EG" : "en-US") : "—"}
+                              {language === "ar" ? "تاريخ الإصدار:" : "Issued:"}{" "}
+                              {cert.issuedAt ? new Date(cert.issuedAt).toLocaleDateString(language === "ar" ? "ar-EG" : "en-US") : "—"}
                             </p>
                           </div>
                         </div>
                         <div className="bg-background/60 rounded-xl px-3 py-2">
-                          <p className="text-[10px] text-muted-foreground mb-0.5">{lang === "ar" ? "رقم الشهادة" : "Certificate ID"}</p>
+                          <p className="text-[10px] text-muted-foreground mb-0.5">{language === "ar" ? "رقم الشهادة" : "Certificate ID"}</p>
                           <p className="font-mono text-xs font-medium tracking-widest">{cert.certificateNumber}</p>
                         </div>
                         <div className="flex gap-2">
                           <a href={`/certificate?code=${cert.certificateNumber}`} target="_blank"
                             className="flex-1 text-center text-xs py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors font-medium">
-                            {lang === "ar" ? "عرض الشهادة" : "View Certificate"}
+                            {language === "ar" ? "عرض الشهادة" : "View Certificate"}
                           </a>
                           {cert.pdfUrl && (
                             <a href={cert.pdfUrl} target="_blank" rel="noopener noreferrer"
                               className="flex-1 text-center text-xs py-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors font-medium">
-                              {lang === "ar" ? "تحميل PDF" : "Download PDF"}
+                              {language === "ar" ? "تحميل PDF" : "Download PDF"}
                             </a>
                           )}
                         </div>
@@ -1174,7 +1174,7 @@ export default function StudentPortal() {
             {/* ─── MESSAGES ─── */}
             {activeTab === "messages" && (
               <motion.div key="messages" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-                <MessagesTab studentId={user.id} studentName={user.name} enrollments={enrollments} lang={lang} />
+                <MessagesTab studentId={user.id} studentName={user.name} enrollments={enrollments} language={language} />
               </motion.div>
             )}
           </AnimatePresence>

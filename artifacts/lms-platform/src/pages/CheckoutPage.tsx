@@ -20,7 +20,7 @@ const MANUAL_METHODS = [
 ];
 
 export default function CheckoutPage() {
-  const { t, lang } = useI18n();
+  const { t, language } = useI18n();
   const { user, isLoading: authLoading } = useAuth();
   const { trackPurchase } = usePixelTracking();
   const [, navigate] = useLocation();
@@ -79,7 +79,7 @@ export default function CheckoutPage() {
     enabled: !!courseId && !!user,
   });
 
-  const courseTitle = lang === "en"
+  const courseTitle = language === "en"
     ? (course?.title ?? "")
     : (course?.titleAr || course?.title || "");
 
@@ -107,10 +107,10 @@ export default function CheckoutPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setCouponError(data.error || (lang === "ar" ? "كود غير صالح" : "Invalid coupon"));
+        setCouponError(data.error || (language === "ar" ? "كود غير صالح" : "Invalid coupon"));
         setCouponData(null);
       } else if (!data.valid) {
-        setCouponError(data.reason || (lang === "ar" ? "كوبون غير صالح" : "Coupon not valid"));
+        setCouponError(data.reason || (language === "ar" ? "كوبون غير صالح" : "Coupon not valid"));
         setCouponData(null);
       } else {
         // API returns: { valid, discountType, discountValue, finalAmount }
@@ -118,7 +118,7 @@ export default function CheckoutPage() {
         setCouponError(null);
       }
     } catch {
-      setCouponError(lang === "ar" ? "خطأ في التحقق من الكوبون" : "Coupon validation failed");
+      setCouponError(language === "ar" ? "خطأ في التحقق من الكوبون" : "Coupon validation failed");
     } finally {
       setCouponLoading(false);
     }
@@ -149,13 +149,13 @@ export default function CheckoutPage() {
         });
         const data = await res.json();
         if (!res.ok) {
-          setError(data.error || (lang === "ar" ? "فشل فتح بوابة الدفع" : "Payment gateway error"));
+          setError(data.error || (language === "ar" ? "فشل فتح بوابة الدفع" : "Payment gateway error"));
         } else {
           setPaymobIframeUrl(data.iframeUrl);
           setStep("paymob");
         }
       } catch {
-        setError(lang === "ar" ? "تعذر الاتصال ببوابة الدفع" : "Could not reach payment gateway");
+        setError(language === "ar" ? "تعذر الاتصال ببوابة الدفع" : "Could not reach payment gateway");
       } finally {
         setIsSubmitting(false);
       }
@@ -164,7 +164,7 @@ export default function CheckoutPage() {
 
     // Manual methods — require receipt
     if (!receiptFile) {
-      setError(lang === "ar" ? "يرجى رفع صورة الإيصال أولاً" : "Please upload the receipt first");
+      setError(language === "ar" ? "يرجى رفع صورة الإيصال أولاً" : "Please upload the receipt first");
       return;
     }
     setStep("confirm");
@@ -193,7 +193,7 @@ export default function CheckoutPage() {
         receiptUrl = (await uploadRes.json()).receiptUrl;
       } else {
         const err = await uploadRes.json().catch(() => ({}));
-        setError(err.error || (lang === "ar" ? "فشل رفع الإيصال" : "Failed to upload receipt"));
+        setError(err.error || (language === "ar" ? "فشل رفع الإيصال" : "Failed to upload receipt"));
         setIsSubmitting(false);
         return;
       }
@@ -224,7 +224,7 @@ export default function CheckoutPage() {
       setStep("success");
     } else {
       const err = await res.json().catch(() => ({}));
-      setError(err.error || (lang === "ar" ? "حدث خطأ أثناء إرسال الطلب" : "Something went wrong"));
+      setError(err.error || (language === "ar" ? "حدث خطأ أثناء إرسال الطلب" : "Something went wrong"));
     }
     setIsSubmitting(false);
   };
@@ -253,7 +253,7 @@ export default function CheckoutPage() {
                 </button>
                 <h2 className="text-lg font-bold flex items-center gap-2">
                   <CreditCard className="w-4 h-4 text-primary" />
-                  {lang === "ar" ? "أدخل بيانات البطاقة" : "Enter Card Details"}
+                  {language === "ar" ? "أدخل بيانات البطاقة" : "Enter Card Details"}
                 </h2>
               </div>
               <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-lg">
@@ -266,13 +266,13 @@ export default function CheckoutPage() {
               </div>
               <p className="text-center text-xs text-muted-foreground mt-3 flex items-center justify-center gap-1">
                 <Lock className="w-3 h-3" />
-                {lang === "ar" ? "مدعوم من Paymob — دفع آمن ومشفر" : "Powered by Paymob — Secure & Encrypted"}
+                {language === "ar" ? "مدعوم من Paymob — دفع آمن ومشفر" : "Powered by Paymob — Secure & Encrypted"}
               </p>
               <div className="text-center mt-2">
                 <a href={paymobIframeUrl} target="_blank" rel="noreferrer"
                   className="text-xs text-primary hover:underline inline-flex items-center gap-1">
                   <ExternalLink className="w-3 h-3" />
-                  {lang === "ar" ? "فتح في نافذة جديدة" : "Open in new window"}
+                  {language === "ar" ? "فتح في نافذة جديدة" : "Open in new window"}
                 </a>
               </div>
             </motion.div>
@@ -284,7 +284,7 @@ export default function CheckoutPage() {
               <h1 className="text-3xl font-bold mb-3">{t("checkout.success.title")}</h1>
               <p className="text-muted-foreground mb-2">{t("checkout.success.subtitle")}</p>
               <p className="text-sm text-muted-foreground mb-8">
-                {lang === "ar"
+                {language === "ar"
                   ? "جاري مراجعة طلبك، سيتم تفعيل الكورس فور التأكد من التحويل."
                   : "Your request is being reviewed. Course will be activated once payment is verified."}
               </p>
@@ -304,7 +304,7 @@ export default function CheckoutPage() {
 
                 <div className="flex items-center gap-3">
                   <button onClick={() => step === "confirm" ? setStep("details") : navigate("/")} className="text-muted-foreground hover:text-foreground transition-colors">
-                    <ChevronLeft className={cn("w-5 h-5", lang === "ar" && "rotate-180")} />
+                    <ChevronLeft className={cn("w-5 h-5", language === "ar" && "rotate-180")} />
                   </button>
                   <h1 className="text-2xl font-bold">
                     {step === "confirm" ? t("checkout.confirm.title") : t("checkout.title")}
@@ -340,13 +340,13 @@ export default function CheckoutPage() {
 
                     <div className="bg-card border border-border rounded-2xl p-6 space-y-3">
                       <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">
-                        {lang === "ar" ? "كوبون الخصم" : "Discount Coupon"}
+                        {language === "ar" ? "كوبون الخصم" : "Discount Coupon"}
                       </h2>
                       <div className="flex gap-2">
                         <Input
                           value={couponInput}
                           onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
-                          placeholder={lang === "ar" ? "أدخل كود الكوبون" : "Enter coupon code"}
+                          placeholder={language === "ar" ? "أدخل كود الكوبون" : "Enter coupon code"}
                           className="flex-1 font-mono uppercase"
                           disabled={!!couponData}
                           onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleApplyCoupon())}
@@ -355,14 +355,14 @@ export default function CheckoutPage() {
                           <Button type="button" variant="outline" size="sm" onClick={() => { setCouponData(null); setCouponInput(""); }}>✕</Button>
                         ) : (
                           <Button type="button" size="sm" onClick={handleApplyCoupon} disabled={couponLoading || !couponInput.trim()}>
-                            {couponLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (lang === "ar" ? "تطبيق" : "Apply")}
+                            {couponLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (language === "ar" ? "تطبيق" : "Apply")}
                           </Button>
                         )}
                       </div>
                       {couponError && <p className="text-xs text-destructive">{couponError}</p>}
                       {couponData && (
                         <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                          ✓ {lang === "ar"
+                          ✓ {language === "ar"
                             ? `تم تطبيق خصم ${couponData.discountType === "percentage" ? `${couponData.discountAmount}%` : `$${couponData.discountAmount}`}`
                             : `Coupon applied — ${couponData.discountType === "percentage" ? `${couponData.discountAmount}% off` : `$${couponData.discountAmount} off`}`}
                         </p>
@@ -382,7 +382,7 @@ export default function CheckoutPage() {
                               {m.id === "paymob"  && <CreditCard className="w-4 h-4" />}
                               {m.id === "manual"  && <Building2 className="w-4 h-4" />}
                             </div>
-                            <span className="text-center leading-tight">{lang === "ar" ? m.labelAr : m.label}</span>
+                            <span className="text-center leading-tight">{language === "ar" ? m.labelAr : m.label}</span>
                             {selectedMethod === m.id && (
                               <div className="absolute top-2 ltr:right-2 rtl:left-2 w-4 h-4 rounded-full bg-primary flex items-center justify-center">
                                 <CheckCircle2 className="w-3 h-3 text-white" />
@@ -403,14 +403,14 @@ export default function CheckoutPage() {
                           <div className={cn("space-y-3 p-4 border-2 border-dashed border-muted rounded-2xl bg-muted/20", selectedMethod === "paymob" && "hidden")}>
                             <Label className="flex items-center gap-2">
                               <Upload className="w-4 h-4" />
-                              {lang === "ar" ? "ارفع صورة إيصال التحويل" : "Upload transaction receipt"}
+                              {language === "ar" ? "ارفع صورة إيصال التحويل" : "Upload transaction receipt"}
                             </Label>
                             {!previewUrl ? (
                               <div onClick={() => fileInputRef.current?.click()}
                                 className="h-32 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-muted/40 transition-colors rounded-xl border border-border bg-background">
                                 <Upload className="w-8 h-8 text-muted-foreground" />
                                 <span className="text-xs text-muted-foreground italic">
-                                  {lang === "ar" ? "اضغط لاختيار صورة" : "Click to select an image"}
+                                  {language === "ar" ? "اضغط لاختيار صورة" : "Click to select an image"}
                                 </span>
                                 <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
                               </div>
@@ -431,7 +431,7 @@ export default function CheckoutPage() {
                     <Button type="submit" size="lg" className="w-full gap-2" disabled={selectedMethod !== "paymob" && !receiptFile || isSubmitting}>
                       {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
                       {selectedMethod === "paymob"
-                        ? (lang === "ar" ? "ادفع بالبطاقة عبر Paymob" : "Pay with Card via Paymob")
+                        ? (language === "ar" ? "ادفع بالبطاقة عبر Paymob" : "Pay with Card via Paymob")
                         : t("checkout.proceed")}
                     </Button>
                   </motion.form>
@@ -466,18 +466,18 @@ export default function CheckoutPage() {
                       <div className="flex justify-between text-sm text-muted-foreground">
                         <span>{t("checkout.method")}</span>
                         <span className="font-medium text-foreground capitalize">
-                          {PAYMENT_METHODS.find((m) => m.id === selectedMethod)?.[lang === "ar" ? "labelAr" : "label"]}
+                          {PAYMENT_METHODS.find((m) => m.id === selectedMethod)?.[language === "ar" ? "labelAr" : "label"]}
                         </span>
                       </div>
                       {previewUrl && (
                         <div className="pt-2">
-                          <p className="text-xs text-muted-foreground mb-2">{lang === "ar" ? "الإيصال المرفق" : "Attached Receipt"}</p>
+                          <p className="text-xs text-muted-foreground mb-2">{language === "ar" ? "الإيصال المرفق" : "Attached Receipt"}</p>
                           <img src={previewUrl} alt="Receipt preview" className="w-full max-h-40 object-contain rounded-xl border bg-black" />
                         </div>
                       )}
                       {couponData && discountAmount > 0 && (
                         <div className="flex justify-between text-sm text-emerald-600 dark:text-emerald-400">
-                          <span>{lang === "ar" ? "خصم الكوبون" : "Coupon discount"}</span>
+                          <span>{language === "ar" ? "خصم الكوبون" : "Coupon discount"}</span>
                           <span>-${discountAmount.toFixed(2)}</span>
                         </div>
                       )}
@@ -492,7 +492,7 @@ export default function CheckoutPage() {
                     <Button size="lg" className="w-full gap-2" onClick={handleConfirm} disabled={isSubmitting || courseLoading}>
                       {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                       {isSubmitting
-                        ? (lang === "ar" ? "جاري الإرسال..." : "Submitting...")
+                        ? (language === "ar" ? "جاري الإرسال..." : "Submitting...")
                         : `${t("checkout.pay")} $${finalPrice.toFixed(2)}`}
                     </Button>
                   </motion.div>
