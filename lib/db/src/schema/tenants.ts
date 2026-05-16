@@ -10,10 +10,11 @@ export const tenantStatusEnum = pgEnum("tenant_status", [
 
 export const tenantsTable = pgTable("tenants", {
   id: serial("id").primaryKey(),
-  slug: text("slug").notNull().unique(),          // e.g. "ahmed" from ahmed.yourdomain.com
-  customDomain: text("custom_domain").unique(),    // e.g. "mycourse.com"
+  slug: text("slug").notNull().unique(),
+  customDomain: text("custom_domain").unique(),
   name: text("name").notNull(),
   status: tenantStatusEnum("status").notNull().default("trial"),
+  plan: text("plan").notNull().default("starter"),
   planExpiresAt: timestamp("plan_expires_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });

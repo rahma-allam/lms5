@@ -23,12 +23,15 @@ export const settingsTable = pgTable("settings", {
   defaultLanguage: defaultLanguageEnum("default_language").notNull().default("en"),
   currency: text("currency").notNull().default("USD"),
   manualPaymentInstructions: text("manual_payment_instructions"),
-  // Paymob payment gateway
   paymobApiKey: text("paymob_api_key"),
   paymobIntegrationId: text("paymob_integration_id"),
   paymobIframeId: text("paymob_iframe_id"),
   paymobHmacSecret: text("paymob_hmac_secret"),
   paymobEnabled: text("paymob_enabled").notNull().default("false"),
+  // NextEdu branding & customization
+  primaryColor: text("primary_color").default("#6d28d9"),
+  accentColor: text("accent_color").default("#7c3aed"),
+  subdomain: text("subdomain"),
 });
 
 export const insertSettingsSchema = createInsertSchema(settingsTable).omit({ id: true });

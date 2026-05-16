@@ -22,6 +22,9 @@ import Categories from "./pages/Categories";
 import Coupons from "./pages/Coupons";
 import AdminLogin from "./pages/AdminLogin";
 import MarketingAI from "./pages/MarketingAI";
+import LandingPage from "./pages/LandingPage";
+import SuperAdminLogin from "./pages/SuperAdminLogin";
+import SuperAdmin from "./pages/SuperAdmin";
 import { useEffect } from "react";
 import { InstructorAuthProvider, useInstructorAuth } from "./lib/instructorAuth";
 import InstructorLogin from "./pages/InstructorLogin";
@@ -44,7 +47,6 @@ function AcademyNotFound() {
   );
 }
 
-// ✅ بيحط الـ admin token في الـ custom-fetch تلقائياً
 function TokenSetter() {
   const { token } = useAdminAuth();
   useEffect(() => {
@@ -154,7 +156,36 @@ function AppWithTenantGuard() {
   );
 }
 
+// Detects if the current path is a NextEdu public/super-admin path
+// that doesn't need tenant context
+function isPublicNextEduPath() {
+  const p = window.location.pathname;
+  return p === "/nextedu" || p.startsWith("/nextedu/") ||
+    p === "/super-admin" || p.startsWith("/super-admin/");
+}
+
+function PublicRoutes() {
+  return (
+    <Switch>
+      <Route path="/nextedu" component={LandingPage} />
+      <Route path="/super-admin/login" component={SuperAdminLogin} />
+      <Route path="/super-admin" component={SuperAdmin} />
+      <Route path="/super-admin/:rest*" component={SuperAdmin} />
+    </Switch>
+  );
+}
+
 function App() {
+  if (isPublicNextEduPath()) {
+    return (
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <QueryClientProvider client={queryClient}>
+          <PublicRoutes />
+        </QueryClientProvider>
+      </ThemeProvider>
+    );
+  }
+
   return (
     <TenantProvider>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>

@@ -19,6 +19,9 @@ import instructorAuthRouter from "./instructor-auth";
 import academyProfileRouter from "./academy-profile";
 import paymobRouter from "./paymob";
 import marketingAiRouter from "./marketing-ai";
+import superAdminRouter from "./super-admin";
+import planPricingRouter from "./plan-pricing";
+import geoRouter from "./geo";
 import { requireAdmin, requireInstructor, allowStudent } from "../middlewares/auth.js";
 import { db, settingsTable, tenantsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
@@ -53,6 +56,9 @@ router.get("/tenant/theme", async (req, res) => {
 
     res.json({
       tenantId: tenant.id,
+      plan: tenant.plan ?? "starter",
+      planExpiresAt: tenant.planExpiresAt ?? null,
+      status: tenant.status,
       theme: {
         academyName: settings?.academyName ?? tenant.name,
         academyNameAr: settings?.academyNameAr ?? null,
@@ -63,6 +69,8 @@ router.get("/tenant/theme", async (req, res) => {
         googleTagId: settings?.googleTagId ?? null,
         tiktokPixelId: settings?.tiktokPixelId ?? null,
         manualPaymentInstructions: settings?.manualPaymentInstructions ?? null,
+        primaryColor: (settings as any)?.primaryColor ?? "#6d28d9",
+        accentColor: (settings as any)?.accentColor ?? "#7c3aed",
       },
     });
   } catch (err) {
@@ -116,5 +124,14 @@ router.use("/academy-profile", requireAdmin, academyProfileRouter);
 router.use("/paymob", paymobRouter);
 // Marketing AI — admin only
 router.use("/marketing-ai", requireAdmin, marketingAiRouter);
+
+// Super Admin (no tenant middleware — uses own auth)
+router.use("/super-admin", superAdminRouter);
+
+// Plan Pricing — public GET, super-admin PUT
+router.use("/plan-pricing", planPricingRouter);
+
+// Geolocation — public
+router.use("/geo", geoRouter);
 
 export default router;

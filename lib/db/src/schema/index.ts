@@ -12,4 +12,6 @@ export * from "./academy_profile";
 export * from "./certificates";
 export * from "./coupons";
 export * from "./admin_users";
-export * from "./notification"
+export * from "./notification";
+export * from "./super_admins";
+export * from "./plan_pricing";

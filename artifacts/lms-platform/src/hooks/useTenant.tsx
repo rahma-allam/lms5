@@ -10,33 +10,48 @@ export interface TenantTheme {
   googleTagId: string | null;
   tiktokPixelId: string | null;
   manualPaymentInstructions: string | null;
+  primaryColor?: string;
+  accentColor?: string;
 }
+
+export type TenantPlan = "starter" | "pro" | "elite";
+
+const PLAN_ORDER: Record<TenantPlan, number> = { starter: 0, pro: 1, elite: 2 };
 
 interface TenantContextValue {
   tenantId: number | null;
   theme: TenantTheme | null;
+  plan: TenantPlan;
+  planExpiresAt: string | null;
+  status: string;
   isLoading: boolean;
   notFound: boolean;
-  /** true  = student-facing Storefront
-   *  false = Admin / Instructor Panel  */
   isStorefront: boolean;
   hostname: string;
   refetch: () => void;
+  hasFeature: (minPlan: TenantPlan) => boolean;
 }
 
 const TenantCtx = createContext<TenantContextValue>({
   tenantId: null,
   theme: null,
+  plan: "starter",
+  planExpiresAt: null,
+  status: "trial",
   isLoading: true,
   notFound: false,
   isStorefront: false,
   hostname: "",
   refetch: () => {},
+  hasFeature: () => false,
 });
 
 export function TenantProvider({ children }: { children: ReactNode }) {
   const [tenantId, setTenantId] = useState<number | null>(null);
   const [theme, setTheme] = useState<TenantTheme | null>(null);
+  const [plan, setPlan] = useState<TenantPlan>("starter");
+  const [planExpiresAt, setPlanExpiresAt] = useState<string | null>(null);
+  const [status, setStatus] = useState<string>("trial");
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [isStorefront, setIsStorefront] = useState(false);
@@ -64,11 +79,10 @@ export function TenantProvider({ children }: { children: ReactNode }) {
         import.meta.env.VITE_DEV_TENANT_SLUG ||
         "demo";
 
-      // Store slug globally so customFetch can pick it up
-     if (isLocalDev && devSlug) {
-  (window as any).__TENANT_SLUG__ = devSlug;
-  localStorage.setItem("tenant_slug", devSlug); // ← أضيفي السطر ده
-} else if (BASE_DOMAIN && hostname.endsWith(`.${BASE_DOMAIN}`)) {
+      if (isLocalDev && devSlug) {
+        (window as any).__TENANT_SLUG__ = devSlug;
+        localStorage.setItem("tenant_slug", devSlug);
+      } else if (BASE_DOMAIN && hostname.endsWith(`.${BASE_DOMAIN}`)) {
         const slug = hostname.replace(`.${BASE_DOMAIN}`, "");
         (window as any).__TENANT_SLUG__ = slug;
       }
@@ -91,11 +105,25 @@ export function TenantProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const data: { tenantId: number; theme: TenantTheme } = await res.json();
+      const data: {
+        tenantId: number;
+        theme: TenantTheme;
+        plan?: TenantPlan;
+        planExpiresAt?: string | null;
+        status?: string;
+      } = await res.json();
+
       setTenantId(data.tenantId);
       setTheme(data.theme);
-      // Show storefront unless we're on the app.* subdomain
+      setPlan((data.plan as TenantPlan) ?? "starter");
+      setPlanExpiresAt(data.planExpiresAt ?? null);
+      setStatus(data.status ?? "trial");
       setIsStorefront(!isAppSubdomain);
+
+      // Inject brand colors as CSS variables
+      if (data.theme?.primaryColor) {
+        document.documentElement.style.setProperty("--color-primary-brand", data.theme.primaryColor);
+      }
     } catch (e) {
       console.error("Failed to load tenant theme", e);
     } finally {
@@ -108,16 +136,24 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  function hasFeature(minPlan: TenantPlan): boolean {
+    return PLAN_ORDER[plan] >= PLAN_ORDER[minPlan];
+  }
+
   return (
     <TenantCtx.Provider
       value={{
         tenantId,
         theme,
+        plan,
+        planExpiresAt,
+        status,
         isLoading,
         notFound,
         isStorefront,
         hostname,
         refetch: loadTenant,
+        hasFeature,
       }}
     >
       {children}

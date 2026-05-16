@@ -1,8 +1,8 @@
 {
-  "name": "LMS Platform",
-  "short_name": "LMS",
-  "description": "منصة تعليمية متكاملة لإدارة الكورسات والطلاب",
-  "start_url": "/?tenant=default&source=pwa",
+  "name": "NextEdu",
+  "short_name": "NextEdu",
+  "description": "منصة NextEdu — التعليم الذكي لجيل القادة",
+  "start_url": "/?source=pwa",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#f8f7ff",
@@ -36,12 +36,11 @@
       "purpose": "any maskable"
     }
   ],
-  "screenshots": [],
   "shortcuts": [
     {
       "name": "لوحة التحكم",
       "short_name": "Dashboard",
-      "url": "/dashboard?tenant=default&source=pwa",
+      "url": "/dashboard?source=pwa",
       "icons": [{ "src": "/icon-192.svg", "sizes": "192x192" }]
     }
   ]
