@@ -1,7 +1,7 @@
 import { useLocation, useSearch } from "wouter";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
-import { usePixelTracking } from "@/hooks/use-pixel-tracking";
+import { usePixels, trackPurchase } from "@/hooks/usePixels";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +22,7 @@ const MANUAL_METHODS = [
 export default function CheckoutPage() {
   const { t, language } = useI18n();
   const { user, isLoading: authLoading } = useAuth();
-  const { trackPurchase } = usePixelTracking();
+  usePixels();
   const [, navigate] = useLocation();
   const search = useSearch();
   const courseId = new URLSearchParams(search).get("courseId");
@@ -36,7 +36,6 @@ export default function CheckoutPage() {
   const [paymobIframeUrl, setPaymobIframeUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch storefront settings to know if Paymob is enabled
   const { data: sfSettings } = useQuery<any>({
     queryKey: ["/api/storefront/settings"],
     queryFn: () => {
@@ -47,7 +46,6 @@ export default function CheckoutPage() {
   });
   const paymobEnabled = sfSettings?.paymobEnabled === "true";
 
-  // Build dynamic payment methods list
   const PAYMENT_METHODS = [
     ...(paymobEnabled
       ? [{ id: "paymob", label: "Credit / Debit Card", labelAr: "بطاقة ائتمان / خصم", color: "bg-violet-600", method: "online" as const }]
@@ -63,8 +61,8 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (!authLoading && !user) {
       const tenant = localStorage.getItem("tenant_slug");
-      sessionStorage.setItem("redirect_after_login", `/checkout?courseId=${courseId}${tenant ? `&tenant=${tenant}` : ""}`);
-      navigate(`/login${tenant ? `?tenant=${tenant}` : ""}`);
+      sessionStorage.setItem("redirect_after_login", `/storefront/checkout?courseId=${courseId}${tenant ? `&tenant=${tenant}` : ""}`);
+      navigate(`/storefront/login${tenant ? `?tenant=${tenant}` : ""}`);
     }
   }, [authLoading, user, courseId, navigate]);
 
@@ -113,7 +111,6 @@ export default function CheckoutPage() {
         setCouponError(data.reason || (language === "ar" ? "كوبون غير صالح" : "Coupon not valid"));
         setCouponData(null);
       } else {
-        // API returns: { valid, discountType, discountValue, finalAmount }
         setCouponData({ code: couponInput.trim().toUpperCase(), discountAmount: data.discountValue, discountType: data.discountType });
         setCouponError(null);
       }
@@ -136,7 +133,6 @@ export default function CheckoutPage() {
     e.preventDefault();
     setError(null);
 
-    // Paymob flow — no receipt needed
     if (selectedMethod === "paymob") {
       setIsSubmitting(true);
       try {
@@ -162,7 +158,6 @@ export default function CheckoutPage() {
       return;
     }
 
-    // Manual methods — require receipt
     if (!receiptFile) {
       setError(language === "ar" ? "يرجى رفع صورة الإيصال أولاً" : "Please upload the receipt first");
       return;
@@ -171,7 +166,7 @@ export default function CheckoutPage() {
   };
 
   const handleConfirm = async () => {
-    if (!user) { navigate("/login"); return; }
+    if (!user) { navigate("/storefront/login"); return; }
     setIsSubmitting(true);
     setError(null);
 
@@ -179,7 +174,6 @@ export default function CheckoutPage() {
     const tenant = localStorage.getItem("tenant_slug");
     const tenantQ = tenant ? `?tenant=${tenant}` : "";
 
-    // رفع الإيصال
     let receiptUrl: string | null = null;
     if (receiptFile) {
       const formData = new FormData();
@@ -199,14 +193,10 @@ export default function CheckoutPage() {
       }
     }
 
-    // إرسال الدفع
     const methodObj = PAYMENT_METHODS.find((m) => m.id === selectedMethod);
     const res = await fetch(`/api/payments${tenantQ}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({
         studentId:  user.id,
         courseId:   courseId ? parseInt(courseId) : undefined,
@@ -257,12 +247,7 @@ export default function CheckoutPage() {
                 </h2>
               </div>
               <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-lg">
-                <iframe
-                  src={paymobIframeUrl}
-                  title="Paymob Checkout"
-                  className="w-full"
-                  style={{ height: "600px", border: "none" }}
-                />
+                <iframe src={paymobIframeUrl} title="Paymob Checkout" className="w-full" style={{ height: "600px", border: "none" }} />
               </div>
               <p className="text-center text-xs text-muted-foreground mt-3 flex items-center justify-center gap-1">
                 <Lock className="w-3 h-3" />
@@ -276,6 +261,7 @@ export default function CheckoutPage() {
                 </a>
               </div>
             </motion.div>
+
           ) : step === "success" ? (
             <motion.div className="text-center py-20 max-w-lg mx-auto" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}>
               <div className="w-20 h-20 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-6">
@@ -289,10 +275,16 @@ export default function CheckoutPage() {
                   : "Your request is being reviewed. Course will be activated once payment is verified."}
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button onClick={() => { const tenant = localStorage.getItem("tenant_slug"); navigate(`/portal${tenant ? `?tenant=${tenant}` : ""}`); }}>
+                <Button onClick={() => {
+                  const tenant = localStorage.getItem("tenant_slug");
+                  navigate(`/storefront/portal${tenant ? `?tenant=${tenant}` : ""}`);
+                }}>
                   {t("checkout.success.go")}
                 </Button>
-                <Button variant="outline" onClick={() => { const tenant = localStorage.getItem("tenant_slug"); navigate(`/${tenant ? `?tenant=${tenant}` : ""}`); }}>
+                <Button variant="outline" onClick={() => {
+                  const tenant = localStorage.getItem("tenant_slug");
+                  navigate(`/storefront${tenant ? `?tenant=${tenant}` : ""}`);
+                }}>
                   {t("checkout.success.back")}
                 </Button>
               </div>
@@ -303,7 +295,9 @@ export default function CheckoutPage() {
               <div className="lg:col-span-3 space-y-6">
 
                 <div className="flex items-center gap-3">
-                  <button onClick={() => step === "confirm" ? setStep("details") : navigate("/")} className="text-muted-foreground hover:text-foreground transition-colors">
+                  <button
+                    onClick={() => step === "confirm" ? setStep("details") : navigate("/storefront")}
+                    className="text-muted-foreground hover:text-foreground transition-colors">
                     <ChevronLeft className={cn("w-5 h-5", language === "ar" && "rotate-180")} />
                   </button>
                   <h1 className="text-2xl font-bold">
@@ -399,7 +393,6 @@ export default function CheckoutPage() {
                               {sfSettings.manualPaymentInstructions}
                             </div>
                           )}
-
                           <div className={cn("space-y-3 p-4 border-2 border-dashed border-muted rounded-2xl bg-muted/20", selectedMethod === "paymob" && "hidden")}>
                             <Label className="flex items-center gap-2">
                               <Upload className="w-4 h-4" />

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { db, modulesTable, studentsTable, lessonsTable, courseSessionsTable, paymentsTable, notificationsTable } from "@workspace/db";
+import { db, modulesTable, studentsTable, lessonsTable, courseSessionsTable, paymentsTable, notificationsTable, enrollmentsTable } from "@workspace/db";
 import { coursesTable, settingsTable, categoriesTable, tenantsTable } from "@workspace/db";
 import jwt from "jsonwebtoken";
 
@@ -20,6 +20,21 @@ async function getDefaultTenantId(): Promise<number> {
     .limit(1);
   if (!tenant) throw new Error("Default tenant not found");
   return tenant.id;
+}
+
+// ── helper: verify student JWT ─────────────────────────────────────────────
+async function verifyStudent(req: any, defaultTenantFn: () => Promise<number>) {
+  const auth = req.headers.authorization as string | undefined;
+  if (!auth?.startsWith("Bearer ")) return null;
+  try {
+    const decoded: any = jwt.verify(auth.slice(7), JWT_SECRET);
+    const tenantId = req.tenantId ?? (await defaultTenantFn());
+    const [s] = await db
+      .select({ id: studentsTable.id })
+      .from(studentsTable)
+      .where(and(eq(studentsTable.id, decoded.id), eq(studentsTable.tenantId, tenantId)));
+    return s ? { studentId: s.id, tenantId } : null;
+  } catch { return null; }
 }
 
 // GET /api/storefront/settings
@@ -88,6 +103,9 @@ router.get("/profile", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+// GET /api/storefront/courses/:id
+// الـ videoUrl و pdfUrl بيتشالوا بس لو الطالب enrolled — غير كده بيتحذفوا من الـ response
 router.get("/courses/:id", async (req, res) => {
   try {
     const tenantId = req.tenantId ?? (await getDefaultTenantId());
@@ -109,7 +127,22 @@ router.get("/courses/:id", async (req, res) => {
       .from(studentsTable)
       .where(and(eq(studentsTable.courseId, courseId), eq(studentsTable.tenantId, tenantId)));
 
-    // جيب الـ modules مع الـ lessons كاملة (بما فيها videoUrl)
+    // تحقق هل الطالب الحالي enrolled في الكورس ده
+    const ctx = await verifyStudent(req, getDefaultTenantId);
+    let isEnrolled = false;
+    if (ctx) {
+      const [enrollment] = await db
+        .select({ id: enrollmentsTable.id })
+        .from(enrollmentsTable)
+        .where(and(
+          eq(enrollmentsTable.studentId, ctx.studentId),
+          eq(enrollmentsTable.courseId, courseId),
+          eq(enrollmentsTable.status, "active")
+        ))
+        .limit(1);
+      isEnrolled = !!enrollment;
+    }
+
     const modulesRaw = await db
       .select()
       .from(modulesTable)
@@ -124,6 +157,7 @@ router.get("/courses/:id", async (req, res) => {
             title: lessonsTable.title,
             titleAr: lessonsTable.titleAr,
             type: lessonsTable.type,
+            // ← الإصلاح: الـ URLs بتيجي بس لو الطالب enrolled
             videoUrl: lessonsTable.videoUrl,
             pdfUrl: lessonsTable.pdfUrl,
             duration: lessonsTable.duration,
@@ -138,7 +172,17 @@ router.get("/courses/:id", async (req, res) => {
           title: mod.title,
           titleAr: mod.titleAr ?? null,
           order: mod.order,
-          lessons,
+          lessons: lessons.map((l) => ({
+            id: l.id,
+            title: l.title,
+            titleAr: l.titleAr ?? null,
+            type: l.type,
+            // الـ URLs مخفية لو الطالب مش enrolled
+            videoUrl: isEnrolled ? (l.videoUrl ?? null) : null,
+            pdfUrl: isEnrolled ? (l.pdfUrl ?? null) : null,
+            duration: l.duration ?? null,
+            order: l.order,
+          })),
         };
       })
     );
@@ -168,6 +212,7 @@ router.get("/courses/:id", async (req, res) => {
       isFeatured: course.isFeatured ?? false,
       studentCount: studentCount?.count ?? 0,
       moduleCount: modules.length,
+      isEnrolled,       // ← مفيد للـ frontend يعرف يعرض زرار التسجيل أو لأ
       modules,
       sessions,
     });
@@ -175,6 +220,7 @@ router.get("/courses/:id", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
 // GET /api/storefront/my-payments — مدفوعات الطالب المتحقق منه بـ JWT
 router.get("/my-payments", async (req, res) => {
   try {
@@ -235,21 +281,6 @@ router.get("/my-payments", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
-// ── helper: verify student JWT ─────────────────────────────────────────────
-async function verifyStudent(req: any, defaultTenantFn: () => Promise<number>) {
-  const auth = req.headers.authorization as string | undefined;
-  if (!auth?.startsWith("Bearer ")) return null;
-  try {
-    const decoded: any = jwt.verify(auth.slice(7), JWT_SECRET);
-    const tenantId = req.tenantId ?? (await defaultTenantFn());
-    const [s] = await db
-      .select({ id: studentsTable.id })
-      .from(studentsTable)
-      .where(and(eq(studentsTable.id, decoded.id), eq(studentsTable.tenantId, tenantId)));
-    return s ? { studentId: s.id, tenantId } : null;
-  } catch { return null; }
-}
 
 // GET /api/storefront/notifications — كل notifications الطالب
 router.get("/notifications", async (req, res) => {

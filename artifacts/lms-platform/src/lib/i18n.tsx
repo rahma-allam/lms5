@@ -153,6 +153,60 @@ const translations: Translations = {
     notifLater: "Maybe later",
     notifGranted: "Notifications enabled!",
     notifDenied: "Notifications blocked in browser settings.",
+    "nav.features": "Features",
+    "nav.courses": "Courses",
+    "nav.testimonials": "Testimonials",
+    "footer.tagline": "Empowering learners worldwide.",
+    "footer.rights": "All rights reserved.",
+
+    // Hero
+    "hero.subtitle": "Join thousands of students and start your learning journey today with expert instructors and high-quality content.",
+    "hero.cta.join": "Join Now",
+    "hero.cta.explore": "Explore Courses",
+
+    // Features section
+    "features.title": "Why Choose Us?",
+    "features.subtitle": "Everything you need to learn and grow — all in one place.",
+    "feature.1.title": "Secure & Trusted",
+    "feature.1.desc": "Your data and payments are fully protected with bank-grade security and encrypted transactions.",
+    "feature.2.title": "Track Your Progress",
+    "feature.2.desc": "Stay motivated with real-time progress tracking, completion badges, and personalized dashboards.",
+    "feature.3.title": "Flexible Payments",
+    "feature.3.desc": "Pay your way — Fawry, Vodafone Cash, Visa, Mastercard, and more options available.",
+    "feature.4.title": "Learn Anywhere",
+    "feature.4.desc": "Access your courses on any device — phone, tablet, or desktop — online or offline.",
+    "feature.5.title": "Self-Paced Learning",
+    "feature.5.desc": "No deadlines, no pressure. Study at your own speed and revisit content as many times as you need.",
+    "feature.6.title": "Expert Support",
+    "feature.6.desc": "Get help when you need it from dedicated instructors and a responsive support team.",
+
+    // How It Works section
+    "howitworks.title": "How It Works",
+    "howitworks.subtitle": "Get started in three simple steps and begin your learning journey today.",
+    "howitworks.step1": "Create Your Account",
+    "howitworks.step1.desc": "Sign up for free in seconds and access your personalized student dashboard.",
+    "howitworks.step2": "Enroll & Pay",
+    "howitworks.step2.desc": "Choose your course and complete payment securely using your preferred method.",
+    "howitworks.step3": "Start Learning",
+    "howitworks.step3.desc": "Watch lessons, complete exercises, and earn your certificate at your own pace.",
+
+    // Testimonials section
+    "testimonials.title": "What Our Students Say",
+    "testimonials.subtitle": "Thousands of learners have transformed their careers with us. Here's what they think.",
+
+    // Trust badges
+    "trust.title": "Safe & Secure Payments",
+    "trust.guarantee": "All transactions are encrypted and protected.",
+
+    // Courses section
+    "courses.title": "Our Courses",
+    "courses.subtitle": "Explore our catalog and find the perfect course to match your goals and skill level.",
+    "courses.buy": "Enroll Now",
+    "courses.live": "Live",
+    "courses.recorded": "Recorded",
+    "courses.students": "students",
+    "courses.modules": "modules",
+    "courses.noCourses": "New courses coming soon. Stay tuned!",
   },
   ar: {
     dashboard: "لوحة التحكم",
@@ -303,11 +357,67 @@ const translations: Translations = {
     notifLater: "لاحقاً",
     notifGranted: "تم تفعيل الإشعارات!",
     notifDenied: "الإشعارات محظورة في إعدادات المتصفح.",
+    "nav.features": "المميزات",
+    "nav.courses": "الدورات",
+    "nav.testimonials": "آراء الطلاب",
+    "footer.tagline": "نمكّن المتعلمين في كل مكان.",
+    "footer.rights": "جميع الحقوق محفوظة.",
+
+    // Hero
+    "hero.subtitle": "انضم لآلاف الطلاب وابدأ رحلتك التعليمية اليوم مع مدربين متخصصين ومحتوى عالي الجودة.",
+    "hero.cta.join": "انضم الآن",
+    "hero.cta.explore": "استعرض الدورات",
+
+    // Features section
+    "features.title": "لماذا تختارنا؟",
+    "features.subtitle": "كل ما تحتاجه للتعلم والنمو — في مكان واحد.",
+    "feature.1.title": "آمن وموثوق",
+    "feature.1.desc": "بياناتك ومدفوعاتك محمية بالكامل بأمان بنكي ومعاملات مشفرة.",
+    "feature.2.title": "تابع تقدمك",
+    "feature.2.desc": "ابقَ متحفزاً بتتبع التقدم الفوري وشارات الإتمام ولوحات معلومات مخصصة.",
+    "feature.3.title": "دفع مرن",
+    "feature.3.desc": "ادفع بالطريقة التي تناسبك — فوري، فودافون كاش، فيزا، ماستركارد، والمزيد.",
+    "feature.4.title": "تعلم في أي مكان",
+    "feature.4.desc": "ادخل كورساتك من أي جهاز — موبايل، تابلت، أو كمبيوتر — أونلاين أو أوفلاين.",
+    "feature.5.title": "تعلم بوتيرتك",
+    "feature.5.desc": "لا مواعيد نهائية ولا ضغط. ادرس بالسرعة التي تناسبك وأعد المحتوى متى تشاء.",
+    "feature.6.title": "دعم الخبراء",
+    "feature.6.desc": "احصل على المساعدة عند الحاجة من مدربين متخصصين وفريق دعم متجاوب.",
+
+    // How It Works section
+    "howitworks.title": "كيف يعمل؟",
+    "howitworks.subtitle": "ابدأ في ثلاث خطوات بسيطة وانطلق في رحلتك التعليمية اليوم.",
+    "howitworks.step1": "أنشئ حسابك",
+    "howitworks.step1.desc": "سجّل مجاناً في ثوانٍ وادخل إلى لوحة التحكم الخاصة بك.",
+    "howitworks.step2": "سجّل وادفع",
+    "howitworks.step2.desc": "اختر دورتك وأتم الدفع بأمان باستخدام الطريقة التي تفضلها.",
+    "howitworks.step3": "ابدأ التعلم",
+    "howitworks.step3.desc": "شاهد الدروس، أكمل التمارين، واحصل على شهادتك بالسرعة التي تناسبك.",
+
+    // Testimonials section
+    "testimonials.title": "ماذا يقول طلابنا؟",
+    "testimonials.subtitle": "آلاف المتعلمين غيّروا مساراتهم المهنية معنا. إليك ما يفكرون فيه.",
+
+    // Trust badges
+    "trust.title": "مدفوعات آمنة وموثوقة",
+    "trust.guarantee": "جميع المعاملات مشفرة ومحمية.",
+
+    // Courses section
+    "courses.title": "دوراتنا التدريبية",
+    "courses.subtitle": "استعرض الكتالوج وابحث عن الدورة المثالية لأهدافك ومستواك.",
+    "courses.buy": "سجّل الآن",
+    "courses.live": "مباشر",
+    "courses.recorded": "مسجّل",
+    "courses.students": "طالب",
+    "courses.modules": "وحدة",
+    "courses.noCourses": "دورات جديدة قادمة قريباً. ترقّب!",
   },
 };
 
 interface I18nContextType {
   language: Language;
+  /** alias لـ language — للتوافق مع مكونات الـ storefront */
+  lang: Language;
   setLanguage: (lang: Language) => void;
   t: (key: string) => string;
 }
@@ -346,7 +456,8 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const t = (key: string) => translations[language]?.[key] ?? key;
 
   return (
-    <I18nContext.Provider value={{ language, setLanguage, t }}>
+    // lang = language عشان الكومبوننتات اللي بتستخدم { lang } تشتغل صح
+    <I18nContext.Provider value={{ language, lang: language, setLanguage, t }}>
       {children}
     </I18nContext.Provider>
   );

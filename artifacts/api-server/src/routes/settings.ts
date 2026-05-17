@@ -107,7 +107,7 @@ router.put("/", async (req, res) => {
       metaConversionToken, googleTagId, googleApiSecret,
       tiktokPixelId, tiktokAccessToken, defaultLanguage, currency,
       paymobEnabled, paymobApiKey, paymobIntegrationId, paymobIframeId, paymobHmacSecret,
-      manualPaymentInstructions,
+      manualPaymentInstructions, primaryColor, accentColor,
     } = body;
 
     if (!academyName) return res.status(400).json({ error: "academyName is required" });
@@ -133,6 +133,8 @@ router.put("/", async (req, res) => {
       paymobIntegrationId: paymobIntegrationId ?? null,
       paymobIframeId: paymobIframeId ?? null,
       paymobHmacSecret: paymobHmacSecret ?? null,
+      primaryColor: primaryColor ?? "#6d28d9",
+      accentColor: accentColor ?? "#7c3aed",
     };
 
     // Use pg pool directly to bypass Drizzle pgEnum type mismatch
@@ -154,8 +156,10 @@ router.put("/", async (req, res) => {
         paymob_api_key      = $14,
         paymob_integration_id = $15,
         paymob_iframe_id    = $16,
-        paymob_hmac_secret  = $17
-      WHERE id = $18
+        paymob_hmac_secret  = $17,
+        primary_color       = $18,
+        accent_color        = $19
+      WHERE id = $20
       RETURNING *`,
       [
         updateData.academyName        ?? null,
@@ -175,6 +179,8 @@ router.put("/", async (req, res) => {
         updateData.paymobIntegrationId ?? null,
         updateData.paymobIframeId     ?? null,
         updateData.paymobHmacSecret   ?? null,
+        updateData.primaryColor       ?? "#6d28d9",
+        updateData.accentColor        ?? "#7c3aed",
         existing.id,
       ]
     );
@@ -197,6 +203,8 @@ router.put("/", async (req, res) => {
       paymobEnabled: settings.paymob_enabled ?? "false",
       paymobIntegrationId: settings.paymob_integration_id ?? null,
       paymobIframeId: settings.paymob_iframe_id ?? null,
+      primaryColor: settings.primary_color ?? "#6d28d9",
+      accentColor: settings.accent_color ?? "#7c3aed",
     });
   } catch (err: any) {
     console.error("[Settings PUT error]", err?.message, err?.detail, err?.code);

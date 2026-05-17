@@ -1,4 +1,4 @@
-// NEW: Admin-only endpoints for payment management
+// Admin-only endpoints for payment management
 import { Router } from "express";
 import { db } from "@workspace/db";
 import { paymentsTable, studentsTable, coursesTable, activityTable, enrollmentsTable } from "@workspace/db";
@@ -7,9 +7,12 @@ import { eq, sql, and } from "drizzle-orm";
 const router = Router();
 
 // GET /api/admin/payments?status=pending
-// List payments filtered by status (for admin review)
+// List payments filtered by status (for admin review) — scoped to current tenant
 router.get("/payments", async (req, res) => {
   try {
+    const tenantId = req.tenantId;
+    if (!tenantId) return res.status(400).json({ error: "Tenant not found" });
+
     const { status } = req.query;
 
     let payments = await db
@@ -21,7 +24,10 @@ router.get("/payments", async (req, res) => {
         courseName: coursesTable.title,
       })
       .from(paymentsTable)
-      .leftJoin(studentsTable, eq(paymentsTable.studentId, studentsTable.id))
+      .innerJoin(studentsTable, and(
+        eq(paymentsTable.studentId, studentsTable.id),
+        eq(studentsTable.tenantId, tenantId)          // ← فلتر الـ tenant هنا
+      ))
       .leftJoin(coursesTable, eq(paymentsTable.courseId, coursesTable.id))
       .orderBy(sql`${paymentsTable.createdAt} desc`);
 
@@ -57,12 +63,22 @@ router.get("/payments", async (req, res) => {
 // Approve a manual payment — enroll student and unlock course access
 router.post("/payments/:id/approve", async (req, res) => {
   try {
+    const tenantId = req.tenantId;
+    if (!tenantId) return res.status(400).json({ error: "Tenant not found" });
+
     const id = parseInt(req.params.id!);
 
+    // التحقق إن الـ payment تابع لنفس الـ tenant
     const [payment] = await db
       .select()
       .from(paymentsTable)
-      .where(eq(paymentsTable.id, id));
+      .innerJoin(studentsTable, and(
+        eq(paymentsTable.studentId, studentsTable.id),
+        eq(studentsTable.tenantId, tenantId)
+      ))
+      .where(eq(paymentsTable.id, id))
+      .limit(1)
+      .then((rows) => rows.map((r) => r.payments));
 
     if (!payment) {
       return res.status(404).json({ error: "Payment not found" });
@@ -91,9 +107,19 @@ router.post("/payments/:id/approve", async (req, res) => {
 
     // Insert enrollment record
     if (payment.courseId) {
-      const existing = await db.select().from(enrollmentsTable).where(and(eq(enrollmentsTable.studentId, payment.studentId), eq(enrollmentsTable.courseId, payment.courseId)));
+      const existing = await db
+        .select()
+        .from(enrollmentsTable)
+        .where(and(
+          eq(enrollmentsTable.studentId, payment.studentId),
+          eq(enrollmentsTable.courseId, payment.courseId)
+        ));
       if (existing.length === 0) {
-        await db.insert(enrollmentsTable).values({ studentId: payment.studentId, courseId: payment.courseId, status: "active" });
+        await db.insert(enrollmentsTable).values({
+          studentId: payment.studentId,
+          courseId: payment.courseId,
+          status: "active",
+        });
       }
     }
 
@@ -102,7 +128,9 @@ router.post("/payments/:id/approve", async (req, res) => {
       .from(studentsTable)
       .where(eq(studentsTable.id, payment.studentId));
 
+    // ← tenantId مضاف في الـ activity record
     await db.insert(activityTable).values({
+      tenantId,
       type: "payment",
       description: `Admin approved payment of $${payment.amount} for ${student?.name ?? "student"}`,
       studentName: student?.name ?? null,
@@ -124,13 +152,23 @@ router.post("/payments/:id/approve", async (req, res) => {
 // Reject a manual payment
 router.post("/payments/:id/reject", async (req, res) => {
   try {
+    const tenantId = req.tenantId;
+    if (!tenantId) return res.status(400).json({ error: "Tenant not found" });
+
     const id = parseInt(req.params.id!);
     const { reason } = req.body;
 
+    // التحقق إن الـ payment تابع لنفس الـ tenant
     const [payment] = await db
       .select()
       .from(paymentsTable)
-      .where(eq(paymentsTable.id, id));
+      .innerJoin(studentsTable, and(
+        eq(paymentsTable.studentId, studentsTable.id),
+        eq(studentsTable.tenantId, tenantId)
+      ))
+      .where(eq(paymentsTable.id, id))
+      .limit(1)
+      .then((rows) => rows.map((r) => r.payments));
 
     if (!payment) {
       return res.status(404).json({ error: "Payment not found" });
@@ -155,7 +193,9 @@ router.post("/payments/:id/reject", async (req, res) => {
       .from(studentsTable)
       .where(eq(studentsTable.id, payment.studentId));
 
+    // ← tenantId مضاف في الـ activity record
     await db.insert(activityTable).values({
+      tenantId,
       type: "payment",
       description: `Admin rejected payment from ${student?.name ?? "student"}${reason ? `: ${reason}` : ""}`,
       studentName: student?.name ?? null,

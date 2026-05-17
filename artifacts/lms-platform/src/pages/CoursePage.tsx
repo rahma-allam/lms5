@@ -11,7 +11,7 @@ import {
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import Navbar from "@/components/storefront/Navbar";
-import { usePixelTracking } from "@/hooks/use-pixel-tracking";
+import { usePixels, trackPurchase } from "@/hooks/usePixels";
 
 function LessonTypeIcon({ type }: { type: string }) {
   if (type === "video") return <PlayCircle className="w-4 h-4 text-primary shrink-0" />;
@@ -92,7 +92,6 @@ function SessionCard({ session, language, t }: { session: any; language: string;
           </p>
         )}
       </div>
-
     </motion.div>
   );
 }
@@ -101,7 +100,7 @@ export default function CoursePage() {
   const { id } = useParams<{ id: string }>();
   const { t, language } = useI18n();
   const [, navigate] = useLocation();
-  const { trackPurchase: _trackPurchase, trackViewContent, trackInitiateCheckout } = usePixelTracking();
+  usePixels();
   const [openModules, setOpenModules] = useState<Record<number, boolean>>({});
 
   const { data: course, isLoading } = useQuery<any>({
@@ -116,24 +115,13 @@ export default function CoursePage() {
     enabled: !!id,
   });
 
-  useEffect(() => {
-    if (course) {
-      trackViewContent({
-        contentId: String(course.id),
-        contentName: course.title,
-        value: course.price,
-      });
-    }
-  }, [course?.id]);
-
   const toggleModule = (moduleId: number) => {
     setOpenModules((prev) => ({ ...prev, [moduleId]: !prev[moduleId] }));
   };
 
   const handleBuyNow = () => {
     if (course) {
-      trackInitiateCheckout({ value: course.price, contentId: String(course.id) });
-      navigate(`/checkout?courseId=${course.id}`);
+      navigate(`/storefront/checkout?courseId=${course.id}`);
     }
   };
 
@@ -172,7 +160,7 @@ export default function CoursePage() {
         <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-background border-b border-border">
           <div className="max-w-5xl mx-auto px-4 py-10">
             <button
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/storefront")}
               className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground text-sm mb-6 transition-colors"
             >
               <ChevronLeft className={cn("w-4 h-4", language === "ar" && "rotate-180")} />

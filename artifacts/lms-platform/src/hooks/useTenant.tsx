@@ -74,10 +74,11 @@ export function TenantProvider({ children }: { children: ReactNode }) {
         BASE_DOMAIN && hostname === `app.${BASE_DOMAIN}`;
 
       const urlParams = new URLSearchParams(window.location.search);
+      // ← الإصلاح: الـ default slug هو "default" مش "demo"
       const devSlug =
         urlParams.get("tenant") ||
         import.meta.env.VITE_DEV_TENANT_SLUG ||
-        "demo";
+        "default";
 
       if (isLocalDev && devSlug) {
         (window as any).__TENANT_SLUG__ = devSlug;

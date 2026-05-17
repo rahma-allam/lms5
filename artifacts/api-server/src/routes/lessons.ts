@@ -109,7 +109,6 @@ router.post("/:moduleId/lessons", async (req, res) => {
 // ══════════════════════════════════════════════════════════════════════════
 
 // POST /api/lessons/:id/upload-video-signature — يولد signature للرفع المباشر من المتصفح
-// المتصفح يرفع مباشرةً لـ Cloudinary بدون ما الفيديو يعدي على السيرفر
 router.post("/:id/upload-video-signature", async (req, res) => {
   try {
     const lessonId = parseInt(req.params.id!);
@@ -154,8 +153,7 @@ router.post("/:id/confirm-video", async (req, res) => {
   }
 });
 
-// POST /api/lessons/:id/signed-url — الفيديو على Cloudinary مش محتاج signed-url
-// بس نحتفظ بالـ endpoint للـ backward compatibility
+// POST /api/lessons/:id/signed-url — backward compatibility
 router.post("/:id/signed-url", async (req, res) => {
   try {
     const lessonId = parseInt(req.params.id!);
@@ -187,15 +185,28 @@ router.post("/:id/complete", async (req, res) => {
     const { studentId } = req.body;
     if (!studentId) return res.status(400).json({ error: "studentId is required" });
 
-    const { lessonCompletionsTable, studentsTable, modulesTable, activityTable } = await import("@workspace/db");
+    const { lessonCompletionsTable, studentsTable, modulesTable: mods, activityTable } = await import("@workspace/db");
     const { sql: sqlHelper } = await import("drizzle-orm");
 
-    // 1. Insert completion (ignore if already exists)
+    // 1. تحقق إن الطالب ينتمي لنفس الـ tenant قبل أي عملية
+    if (req.tenantId) {
+      const { tenantsTable: _t, ...rest } = await import("@workspace/db");
+      const [st] = await db
+        .select({ id: studentsTable.id })
+        .from(studentsTable)
+        .where(and(
+          eq(studentsTable.id, parseInt(studentId)),
+          eq(studentsTable.tenantId, req.tenantId)
+        ));
+      if (!st) return res.status(403).json({ error: "Access denied" });
+    }
+
+    // 2. Insert completion (ignore if already exists)
     await db.execute(
       sqlHelper`INSERT INTO lesson_completions (student_id, lesson_id) VALUES (${studentId}, ${lessonId}) ON CONFLICT DO NOTHING`
     );
 
-    // 2. Get the lesson's module to find the course
+    // 3. Get the lesson's module to find the course
     const [lessonRow] = await db
       .select({ moduleId: lessonsTable.moduleId })
       .from(lessonsTable)
@@ -203,39 +214,38 @@ router.post("/:id/complete", async (req, res) => {
     if (!lessonRow) return res.status(404).json({ error: "Lesson not found" });
 
     const [moduleRow] = await db
-      .select({ courseId: modulesTable.courseId })
-      .from(modulesTable)
-      .where(eq(modulesTable.id, lessonRow.moduleId));
+      .select({ courseId: mods.courseId })
+      .from(mods)
+      .where(eq(mods.id, lessonRow.moduleId));
     if (!moduleRow) return res.status(404).json({ error: "Module not found" });
 
-    const { coursesTable } = await import("@workspace/db");
-
-    // 3. Count total lessons in this course
+    // 4. Count total lessons in this course
     const [{ total }] = await db
       .select({ total: sqlHelper<number>`count(*)::int` })
       .from(lessonsTable)
-      .innerJoin(modulesTable, eq(lessonsTable.moduleId, modulesTable.id))
-      .where(eq(modulesTable.courseId, moduleRow.courseId));
+      .innerJoin(mods, eq(lessonsTable.moduleId, mods.id))
+      .where(eq(mods.courseId, moduleRow.courseId));
 
-    // 4. Count completed lessons for this student in this course
+    // 5. Count completed lessons for this student in this course
     const [{ completed }] = await db
       .select({ completed: sqlHelper<number>`count(*)::int` })
       .from(lessonCompletionsTable)
       .innerJoin(lessonsTable, eq(lessonCompletionsTable.lessonId, lessonsTable.id))
-      .innerJoin(modulesTable, eq(lessonsTable.moduleId, modulesTable.id))
+      .innerJoin(mods, eq(lessonsTable.moduleId, mods.id))
       .where(
-        sqlHelper`${lessonCompletionsTable.studentId} = ${studentId} AND ${modulesTable.courseId} = ${moduleRow.courseId}`
+        sqlHelper`${lessonCompletionsTable.studentId} = ${studentId} AND ${mods.courseId} = ${moduleRow.courseId}`
       );
 
-    // 5. Calculate and update progress
+    // 6. Calculate and update progress
     const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
     await db
       .update(studentsTable)
       .set({ progress: progress.toString() })
-      .where(eq(studentsTable.id, studentId));
+      .where(eq(studentsTable.id, parseInt(studentId)));
 
-    // 6. Insert activity record
+    // 7. Insert activity record — مع tenantId ← الإصلاح الأساسي هنا
     await db.insert(activityTable).values({
+      tenantId: req.tenantId ?? null,
       type: "lesson_completed",
       description: "Student completed a lesson",
       relatedId: lessonId,
@@ -349,8 +359,6 @@ router.put("/:id", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
-// DELETE /api/lessons/:id
 
 // DELETE /api/lessons/:id
 router.delete("/:id", async (req, res) => {

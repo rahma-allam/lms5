@@ -1,10 +1,10 @@
 import { useI18n } from "@/lib/i18n";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
 import { JoinCourseModal } from "./JoinCourseModal";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchStorefront } from "@/lib/api";
+import { ArrowRight, Play, Star, Users, BookOpen, Award } from "lucide-react";
 
 function getTenantParam(): string {
   const fromUrl = new URLSearchParams(window.location.search).get("tenant");
@@ -13,92 +13,158 @@ function getTenantParam(): string {
   return s ? `?tenant=${s}` : "";
 }
 
+const stagger = {
+  container: { hidden: {}, show: { transition: { staggerChildren: 0.1 } } },
+  item: { hidden: { opacity: 0, y: 28 }, show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } } },
+};
+
 export default function Hero() {
   const { t, lang } = useI18n();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // academy profile holds hero title/subtitle/cta
   const { data: profile } = useQuery<any>({
     queryKey: ["/api/storefront/profile"],
     queryFn: () => fetch(`/api/storefront/profile${getTenantParam()}`).then((r) => r.ok ? r.json() : {}),
     staleTime: 60_000,
   });
 
-  // settings holds academy name and logo
   const { data: settings } = useQuery<any>({
     queryKey: ["/api/storefront/settings"],
     queryFn: () => fetchStorefront(`/api/storefront/settings${getTenantParam()}`),
     staleTime: 60_000,
   });
 
-  const heroTitle = lang === "ar"
-    ? (profile?.heroTitleAr || null)
-    : (profile?.heroTitleEn || null);
+  const heroTitle    = lang === "ar" ? (profile?.heroTitleAr    || null) : (profile?.heroTitleEn    || null);
+  const heroSubtitle = lang === "ar" ? (profile?.heroSubtitleAr || null) : (profile?.heroSubtitleEn || null);
+  const heroCta      = lang === "ar" ? (profile?.heroCtaAr || t("hero.cta.join"))  : (profile?.heroCtaEn || t("hero.cta.join"));
+  const academyName  = lang === "ar" ? (settings?.academyNameAr || settings?.academyName || "") : (settings?.academyName || "");
 
-  const heroSubtitle = lang === "ar"
-    ? (profile?.heroSubtitleAr || null)
-    : (profile?.heroSubtitleEn || null);
-
-  const heroCta = lang === "ar"
-    ? (profile?.heroCtaAr || t("hero.cta.join"))
-    : (profile?.heroCtaEn || t("hero.cta.join"));
-
-  const academyName = lang === "ar"
-    ? (settings?.academyNameAr || settings?.academyName || "")
-    : (settings?.academyName || "");
+  const stats = [
+    { icon: Users,    value: "12K+", label: lang === "ar" ? "طالب نشط"     : "Active Students" },
+    { icon: BookOpen, value: "150+", label: lang === "ar" ? "كورس متاح"    : "Courses"         },
+    { icon: Star,     value: "4.9",  label: lang === "ar" ? "تقييم المنصة" : "Platform Rating" },
+    { icon: Award,    value: "98%",  label: lang === "ar" ? "نسبة الرضا"   : "Satisfaction"    },
+  ];
 
   return (
-    <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden">
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/10 via-background to-background"></div>
-      <div className="absolute top-1/2 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] -translate-y-1/2 -translate-x-1/2"></div>
-      
-      <div className="container mx-auto px-4 md:px-6 relative z-10">
-        <div className="max-w-4xl mx-auto text-center">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <span className="inline-block py-1 px-3 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-              {academyName || (lang === "ar" ? "أكاديمية تعليم متميز" : "#1 Online Academy")}
+    <section
+      dir={lang === "ar" ? "rtl" : "ltr"}
+      className="relative min-h-screen flex items-center overflow-hidden"
+    >
+      {/* Brand glow blobs — شفافية خفيفة تشتغل على light و dark */}
+      <motion.div
+        className="absolute -top-40 -right-40 w-[700px] h-[700px] rounded-full pointer-events-none z-0"
+        style={{ background: "radial-gradient(circle, rgba(var(--brand-primary-rgb, 109 40 217) / 0.12) 0%, transparent 70%)" }}
+        animate={{ scale: [1, 1.06, 1], opacity: [0.7, 1, 0.7] }}
+        transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="absolute -bottom-20 -left-20 w-[500px] h-[500px] rounded-full pointer-events-none z-0"
+        style={{ background: "radial-gradient(circle, rgba(var(--brand-accent-rgb, 124 58 237) / 0.08) 0%, transparent 70%)" }}
+        animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.9, 0.5] }}
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+      />
+
+      {/* Subtle brand grid */}
+      <div
+        className="absolute inset-0 z-0 pointer-events-none"
+        style={{
+          backgroundImage: `linear-gradient(rgba(var(--brand-primary-rgb, 109 40 217) / 0.04) 1px, transparent 1px),
+                            linear-gradient(90deg, rgba(var(--brand-primary-rgb, 109 40 217) / 0.04) 1px, transparent 1px)`,
+          backgroundSize: "72px 72px",
+        }}
+      />
+
+      <div className="container mx-auto px-4 md:px-8 py-32 md:py-48 relative z-10">
+        <motion.div variants={stagger.container} initial="hidden" animate="show" className="max-w-5xl mx-auto">
+
+          {/* Academy badge */}
+          <motion.div variants={stagger.item} className="flex justify-center mb-8">
+            <span
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium border"
+              style={{
+                background: "rgba(var(--brand-primary-rgb, 109 40 217) / 0.08)",
+                borderColor: "rgba(var(--brand-primary-rgb, 109 40 217) / 0.25)",
+                color: "var(--brand-primary, #6d28d9)",
+              }}
+            >
+              <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: "var(--brand-primary, #6d28d9)" }} />
+              {academyName || (lang === "ar" ? "منصة التعلم الذكي" : "Smart Learning Platform")}
             </span>
           </motion.div>
-          
-          <motion.h1 
-            className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
+
+          {/* Heading — يستخدم foreground الطبيعي للـ theme */}
+          <motion.h1
+            variants={stagger.item}
+            className="text-center font-black tracking-tighter leading-[1.05] mb-6"
+            style={{ fontSize: "clamp(2.6rem, 7vw, 5.5rem)", letterSpacing: "-0.03em", color: "var(--foreground)" }}
           >
-            {heroTitle ? (
-              <>{heroTitle}</>
-            ) : lang === "ar" ? (
-              <>اكتشف <span className="text-primary">إمكانياتك الحقيقية</span></>
+            {heroTitle ? heroTitle : lang === "ar" ? (
+              <>ابدأ رحلتك<br />
+                <span style={{ backgroundImage: `linear-gradient(135deg, var(--brand-primary, #6d28d9), var(--brand-accent, #7c3aed))`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                  التعليمية الحقيقية
+                </span>
+              </>
             ) : (
-              <>Unlock Your <span className="text-primary">True Potential</span></>
+              <>Learn Without<br />
+                <span style={{ backgroundImage: `linear-gradient(135deg, var(--brand-primary, #6d28d9), var(--brand-accent, #7c3aed))`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                  Limits
+                </span>
+              </>
             )}
           </motion.h1>
-          
-          <motion.p 
-            className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+
+          {/* Subtitle */}
+          <motion.p
+            variants={stagger.item}
+            className="text-center text-lg md:text-xl max-w-2xl mx-auto mb-12 leading-relaxed"
+            style={{ color: "var(--muted-foreground)" }}
           >
             {heroSubtitle || t("hero.subtitle")}
           </motion.p>
-          
-          <motion.div 
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <Button size="lg" className="w-full sm:w-auto text-base h-14 px-8 rounded-full" onClick={() => setIsModalOpen(true)}>
+
+          {/* CTAs */}
+          <motion.div variants={stagger.item} className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="group flex items-center gap-3 px-8 py-4 rounded-2xl font-semibold text-white text-base transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]"
+              style={{
+                background: `linear-gradient(135deg, var(--brand-primary, #6d28d9), var(--brand-accent, #7c3aed))`,
+                boxShadow: `0 4px 24px rgba(var(--brand-primary-rgb, 109 40 217) / 0.35)`,
+              }}
+            >
               {heroCta}
-            </Button>
-            <Button size="lg" variant="outline" className="w-full sm:w-auto text-base h-14 px-8 rounded-full">
-              <a href="#courses">{t("hero.cta.explore")}</a>
-            </Button>
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </button>
+
+            <a
+              href="#courses"
+              className="flex items-center gap-3 px-8 py-4 rounded-2xl font-semibold text-base transition-all duration-200 hover:scale-[1.02] border"
+              style={{ borderColor: "var(--border)", color: "var(--foreground)", background: "var(--background)" }}
+            >
+              <Play className="w-4 h-4" style={{ fill: "currentColor", color: "var(--brand-primary, #6d28d9)" }} />
+              {t("hero.cta.explore")}
+            </a>
           </motion.div>
-        </div>
+
+          {/* Stats bar */}
+          <motion.div
+            variants={stagger.item}
+            className="grid grid-cols-2 md:grid-cols-4 gap-px rounded-2xl overflow-hidden border"
+            style={{ borderColor: "var(--border)", background: "var(--border)" }}
+          >
+            {stats.map((stat, i) => (
+              <div key={i} className="flex flex-col items-center py-6 px-4" style={{ background: "var(--card)" }}>
+                <stat.icon className="w-5 h-5 mb-2" style={{ color: "var(--brand-primary, #6d28d9)" }} />
+                <span className="text-2xl font-black tracking-tight" style={{ color: "var(--foreground)" }}>{stat.value}</span>
+                <span className="text-xs mt-1" style={{ color: "var(--muted-foreground)" }}>{stat.label}</span>
+              </div>
+            ))}
+          </motion.div>
+
+        </motion.div>
       </div>
+
       <JoinCourseModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} course={null} />
     </section>
   );

@@ -1,6 +1,6 @@
 import { useI18n } from "@/lib/i18n";
 import { motion } from "framer-motion";
-import { usePixelTracking } from "@/hooks/use-pixel-tracking";
+import { usePixels, trackPurchase } from "@/hooks/usePixels";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Users, PlayCircle, Radio, ShoppingCart, Inbox, Star, Clock } from "lucide-react";
@@ -8,7 +8,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-
 
 function getTenantParam(): string {
   const fromUrl = new URLSearchParams(window.location.search).get("tenant");
@@ -19,40 +18,38 @@ function getTenantParam(): string {
 
 export default function Courses() {
   const { t, lang } = useI18n();
-  const { trackViewContent } = usePixelTracking();
+  usePixels();
   const [, navigate] = useLocation();
   const [activeCat, setActiveCat] = useState<number | null>(null);
 
-const { data: courses, isLoading } = useQuery<any[]>({
-  queryKey: ["/api/storefront/courses"],
-  queryFn: () => fetch(`/api/storefront/courses${getTenantParam()}`).then((r) => r.json()),
-  staleTime: 60_000,
-});
+  const { data: courses, isLoading } = useQuery<any[]>({
+    queryKey: ["/api/storefront/courses"],
+    queryFn: () => fetch(`/api/storefront/courses${getTenantParam()}`).then((r) => r.json()),
+    staleTime: 60_000,
+  });
 
-const { data: categories } = useQuery<any[]>({
-  queryKey: ["/api/storefront/categories"],
-  queryFn: () => fetch(`/api/storefront/categories${getTenantParam()}`).then((r) => r.json()),
-  staleTime: 60_000,
-});
-  
+  const { data: categories } = useQuery<any[]>({
+    queryKey: ["/api/storefront/categories"],
+    queryFn: () => fetch(`/api/storefront/categories${getTenantParam()}`).then((r) => r.json()),
+    staleTime: 60_000,
+  });
 
- const handleBuyNow = (courseId: number, price: number, title: string) => {
-  trackViewContent({ contentId: String(courseId), contentName: title, value: price });
-  const tenant = localStorage.getItem("tenant_slug");
-  navigate(`/checkout?courseId=${courseId}${tenant ? `&tenant=${tenant}` : ""}`);
-};
+  const handleBuyNow = (courseId: number, price: number, title: string) => {
+    const tenant = localStorage.getItem("tenant_slug");
+    navigate(`/storefront/checkout?courseId=${courseId}${tenant ? `&tenant=${tenant}` : ""}`);
+  };
 
-const handleViewCourse = (courseId: number) => {
-  const tenant = localStorage.getItem("tenant_slug");
-  navigate(`/course/${courseId}${tenant ? `?tenant=${tenant}` : ""}`);
-};
+  const handleViewCourse = (courseId: number) => {
+    const tenant = localStorage.getItem("tenant_slug");
+    navigate(`/storefront/courses/${courseId}${tenant ? `?tenant=${tenant}` : ""}`);
+  };
+
   const safeCourses = Array.isArray(courses) ? courses : [];
   const filtered = activeCat ? safeCourses.filter((c: any) => c.categoryId === activeCat) : safeCourses;
 
   return (
     <section id="courses" className="py-20">
       <div className="container mx-auto px-4 md:px-6">
-        {/* Category filter */}
         {categories && categories.length > 0 && (
           <div className="flex gap-2 flex-wrap justify-center mb-10">
             <button
@@ -121,8 +118,7 @@ const handleViewCourse = (courseId: number) => {
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          /* حالة عدم وجود بيانات: بدلاً من ترك الصفحة فاضية، نعرض رسالة احترافية */
-          <motion.div 
+          <motion.div
             className="text-center py-20 bg-muted/30 rounded-3xl border-2 border-dashed border-border"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

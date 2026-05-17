@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Settings, Megaphone, Globe, KeyRound, Building2, CreditCard, ToggleLeft, ToggleRight } from "lucide-react";
+import { Settings, Megaphone, Globe, KeyRound, Building2, CreditCard, ToggleLeft, ToggleRight, Palette } from "lucide-react";
 
 interface SettingsForm {
   academyName: string;
@@ -20,6 +20,8 @@ interface SettingsForm {
   defaultLanguage: "en" | "ar";
   currency: string;
   manualPaymentInstructions: string;
+  primaryColor: string;
+  accentColor: string;
 }
 
 function fetchWithAuth(url: string, options?: RequestInit) {
@@ -100,6 +102,8 @@ export default function SettingsPage() {
         defaultLanguage: settings.defaultLanguage,
         currency: settings.currency,
         manualPaymentInstructions: settings.manualPaymentInstructions ?? "",
+        primaryColor: settings.primaryColor ?? "#6d28d9",
+        accentColor: settings.accentColor ?? "#7c3aed",
       });
     }
   }, [settings, reset]);
@@ -135,6 +139,8 @@ export default function SettingsPage() {
             defaultLanguage: data.defaultLanguage || settings?.defaultLanguage || "en",
             currency: data.currency || settings?.currency || "USD",
             manualPaymentInstructions: data.manualPaymentInstructions || settings?.manualPaymentInstructions || null,
+            primaryColor: data.primaryColor || settings?.primaryColor || "#6d28d9",
+            accentColor: data.accentColor || settings?.accentColor || "#7c3aed",
           });
         }}
         className="space-y-6"
@@ -305,6 +311,7 @@ export default function SettingsPage() {
 
         <AcademyProfileSection />
         <PaymobSection settings={settings} />
+        <BrandColorsSection register={register} watch={watch} setValue={setValue} />
 
         <Button type="submit" className="w-full" disabled={updateSettings.isPending}>
           {updateSettings.isPending ? t("loading") : t("saveSettings")}
@@ -390,6 +397,197 @@ function AcademyProfileSection() {
     </div>
   );
 }
+// ─── Brand Colors Section ─────────────────────────────────────────────────────
+function BrandColorsSection({
+  register,
+  watch,
+  setValue,
+}: {
+  register: any;
+  watch: any;
+  setValue: any;
+}) {
+  const primaryColor = watch("primaryColor") || "#6d28d9";
+  const accentColor  = watch("accentColor")  || "#7c3aed";
+
+  // معاينة فورية على الصفحة
+  const applyPreview = (primary: string, accent: string) => {
+    document.documentElement.style.setProperty("--brand-primary", primary);
+    document.documentElement.style.setProperty("--brand-accent", accent);
+    const toRgb = (hex: string) => {
+      const h = hex.replace("#", "");
+      return `${parseInt(h.slice(0,2),16)} ${parseInt(h.slice(2,4),16)} ${parseInt(h.slice(4,6),16)}`;
+    };
+    document.documentElement.style.setProperty("--brand-primary-rgb", toRgb(primary));
+    document.documentElement.style.setProperty("--brand-accent-rgb",  toRgb(accent));
+  };
+
+  const PRESETS = [
+    { label: "بنفسجي",  primary: "#6d28d9", accent: "#7c3aed" },
+    { label: "أزرق",    primary: "#1d4ed8", accent: "#2563eb" },
+    { label: "أخضر",   primary: "#059669", accent: "#10b981" },
+    { label: "برتقالي", primary: "#d97706", accent: "#f59e0b" },
+    { label: "وردي",   primary: "#be185d", accent: "#ec4899" },
+    { label: "أحمر",   primary: "#dc2626", accent: "#ef4444" },
+    { label: "سماوي",  primary: "#0891b2", accent: "#06b6d4" },
+    { label: "رمادي",  primary: "#374151", accent: "#6b7280" },
+  ];
+
+  return (
+    <div className="bg-card border border-card-border rounded-xl p-5 space-y-5">
+      {/* Header */}
+      <div className="flex items-center gap-2">
+        <Palette className="w-4 h-4 text-primary" />
+        <h2 className="text-sm font-semibold">ألوان الأكاديمية</h2>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        اختر الألوان الأساسية لواجهة الأكاديمية. ستظهر في الأزرار والعناوين والتأثيرات على صفحة الطلاب.
+      </p>
+
+      {/* Color pickers */}
+      <div className="grid grid-cols-2 gap-6">
+        {/* Primary */}
+        <div className="space-y-2">
+          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            اللون الأساسي
+          </label>
+          <div className="flex items-center gap-3">
+            <div className="relative w-10 h-10 rounded-lg overflow-hidden border border-border shrink-0 cursor-pointer shadow-sm">
+              <input
+                type="color"
+                {...register("primaryColor")}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                onChange={(e) => {
+                  setValue("primaryColor", e.target.value);
+                  applyPreview(e.target.value, accentColor);
+                }}
+              />
+              <div className="w-full h-full" style={{ background: primaryColor }} />
+            </div>
+            <Input
+              value={primaryColor}
+              onChange={(e) => {
+                setValue("primaryColor", e.target.value);
+                if (/^#[0-9a-fA-F]{6}$/.test(e.target.value))
+                  applyPreview(e.target.value, accentColor);
+              }}
+              className="font-mono text-xs uppercase"
+              maxLength={7}
+              placeholder="#6d28d9"
+            />
+          </div>
+          {/* Preview sample */}
+          <div
+            className="h-8 rounded-lg flex items-center justify-center text-white text-xs font-semibold"
+            style={{ background: primaryColor }}
+          >
+            زرار الانضمام
+          </div>
+        </div>
+
+        {/* Accent */}
+        <div className="space-y-2">
+          <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            اللون الثانوي
+          </label>
+          <div className="flex items-center gap-3">
+            <div className="relative w-10 h-10 rounded-lg overflow-hidden border border-border shrink-0 cursor-pointer shadow-sm">
+              <input
+                type="color"
+                {...register("accentColor")}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                onChange={(e) => {
+                  setValue("accentColor", e.target.value);
+                  applyPreview(primaryColor, e.target.value);
+                }}
+              />
+              <div className="w-full h-full" style={{ background: accentColor }} />
+            </div>
+            <Input
+              value={accentColor}
+              onChange={(e) => {
+                setValue("accentColor", e.target.value);
+                if (/^#[0-9a-fA-F]{6}$/.test(e.target.value))
+                  applyPreview(primaryColor, e.target.value);
+              }}
+              className="font-mono text-xs uppercase"
+              maxLength={7}
+              placeholder="#7c3aed"
+            />
+          </div>
+          {/* Gradient preview */}
+          <div
+            className="h-8 rounded-lg"
+            style={{ background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})` }}
+          />
+        </div>
+      </div>
+
+      {/* Presets */}
+      <div className="space-y-2">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">ألوان جاهزة</p>
+        <div className="flex flex-wrap gap-2">
+          {PRESETS.map((p) => {
+            const isActive = primaryColor === p.primary && accentColor === p.accent;
+            return (
+              <button
+                key={p.label}
+                type="button"
+                title={p.label}
+                onClick={() => {
+                  setValue("primaryColor", p.primary);
+                  setValue("accentColor", p.accent);
+                  applyPreview(p.primary, p.accent);
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all"
+                style={{
+                  borderColor: isActive ? p.primary : "var(--border)",
+                  background: isActive ? `${p.primary}18` : "transparent",
+                  color: isActive ? p.primary : "var(--muted-foreground)",
+                }}
+              >
+                <span
+                  className="w-3 h-3 rounded-full shrink-0"
+                  style={{ background: `linear-gradient(135deg, ${p.primary}, ${p.accent})` }}
+                />
+                {p.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Live preview strip */}
+      <div
+        className="rounded-xl p-4 flex items-center justify-between gap-4 border"
+        style={{
+          background: `rgba(${parseInt(primaryColor.slice(1,3),16)} ${parseInt(primaryColor.slice(3,5),16)} ${parseInt(primaryColor.slice(5,7),16)} / 0.06)`,
+          borderColor: `${primaryColor}30`,
+        }}
+      >
+        <div>
+          <p className="text-xs font-semibold" style={{ color: primaryColor }}>معاينة مباشرة</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">هكذا ستبدو الألوان على صفحة الطلاب</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <div
+            className="px-3 py-1.5 rounded-full text-white text-xs font-semibold"
+            style={{ background: `linear-gradient(135deg, ${primaryColor}, ${accentColor})` }}
+          >
+            ابدأ الآن
+          </div>
+          <div
+            className="w-8 h-8 rounded-full flex items-center justify-center"
+            style={{ background: `${primaryColor}15`, color: primaryColor }}
+          >
+            <Palette className="w-4 h-4" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Paymob Gateway Section ───────────────────────────────────────────────────
 function PaymobSection({ settings }: { settings?: Record<string, any> }) {
   const { t } = useI18n();

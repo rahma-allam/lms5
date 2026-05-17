@@ -121,7 +121,7 @@ function StorefrontRoutes() {
     <Switch>
       <Route path="/storefront" component={StorefrontLandingPage} />
       <Route path="/storefront/courses/:id" component={CoursePage} />
-      <Route path="/storefront/checkout/:id" component={CheckoutPage} />
+      <Route path="/storefront/checkout/" component={CheckoutPage} />
       <Route path="/storefront/register" component={RegisterPage} />
       <Route path="/storefront/login" component={LoginPage} />
       <Route path="/storefront/portal" component={StudentPortal} />

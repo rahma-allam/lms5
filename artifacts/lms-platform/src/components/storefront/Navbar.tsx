@@ -9,7 +9,6 @@ import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchStorefront } from "@/lib/api";
 
-// ── helper: authenticated fetch ────────────────────────────────────────────
 function fetchWithAuth(url: string) {
   const token  = localStorage.getItem("auth_token");
   const tenant = localStorage.getItem("tenant_slug");
@@ -19,7 +18,13 @@ function fetchWithAuth(url: string) {
   }).then((r) => r.json());
 }
 
-// ── NotificationBell ────────────────────────────────────────────────────────
+function getTenantParam(): string {
+  const fromUrl = new URLSearchParams(window.location.search).get("tenant");
+  if (fromUrl) { localStorage.setItem("tenant_slug", fromUrl); return `?tenant=${fromUrl}`; }
+  const s = localStorage.getItem("tenant_slug") ?? "";
+  return s ? `?tenant=${s}` : "";
+}
+
 function NotificationBell({ language }: { language: string }) {
   const [open, setOpen] = useState(false);
   const ref             = useRef<HTMLDivElement>(null);
@@ -51,7 +56,6 @@ function NotificationBell({ language }: { language: string }) {
       method: "PATCH",
       headers: {
         ...(localStorage.getItem("auth_token") ? { Authorization: `Bearer ${localStorage.getItem("auth_token")}` } : {}),
-        ...(localStorage.getItem("tenant_slug") ? {} : {}),
       },
     }),
     onSuccess: () => {
@@ -60,7 +64,6 @@ function NotificationBell({ language }: { language: string }) {
     },
   });
 
-  // إغلاق لو ضغط برّا
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
@@ -98,7 +101,6 @@ function NotificationBell({ language }: { language: string }) {
           "absolute top-12 z-50 w-80 bg-popover border border-border rounded-2xl shadow-xl overflow-hidden",
           language === "ar" ? "left-0" : "right-0"
         )}>
-          {/* header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
             <span className="font-semibold text-sm flex items-center gap-1.5">
               <Megaphone className="w-4 h-4 text-primary" />
@@ -114,7 +116,6 @@ function NotificationBell({ language }: { language: string }) {
             )}
           </div>
 
-          {/* list */}
           <div className="max-h-80 overflow-y-auto divide-y divide-border">
             {notifications.length === 0 ? (
               <div className="py-10 text-center text-muted-foreground text-sm">
@@ -159,30 +160,28 @@ function NotificationBell({ language }: { language: string }) {
 }
 
 export default function Navbar() {
-  const { language, setLanguage , t} = useI18n();
+  const { language, setLanguage, t } = useI18n();
   const { theme, setTheme } = useTheme();
   const { user, logout, isAuthenticated } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [location, navigate] = useLocation();
 
-  // ✅ هل احنا على الصفحة الرئيسية؟
-  const isHome = location === "/" || location === "";
+  const isHome = location === "/storefront" || location === "/storefront/";
 
   const { data: settings } = useQuery<any>({
     queryKey: ["/api/storefront/settings"],
-    queryFn: () => fetchStorefront("/api/storefront/settings"),
+    queryFn: () => fetchStorefront(`/api/storefront/settings${getTenantParam()}`),
     staleTime: 60_000,
   });
 
-  const academyName = language === "ar" 
-  ? (settings?.academyNameAr || settings?.academyName || "EduAcademy Pro")
-  : (settings?.academyName || "EduAcademy Pro");
+  const academyName = language === "ar"
+    ? (settings?.academyNameAr || settings?.academyName || "EduAcademy Pro")
+    : (settings?.academyName || "EduAcademy Pro");
   const logoUrl = settings?.logoUrl;
 
-  // ✅ رابط الصفحة الرئيسية مع الـ tenant
-  const homeUrl = () => {
+  const storefrontHome = () => {
     const tenant = localStorage.getItem("tenant_slug");
-    return tenant ? `/?tenant=${tenant}` : "/";
+    return tenant ? `/storefront?tenant=${tenant}` : "/storefront";
   };
 
   useEffect(() => {
@@ -193,11 +192,7 @@ export default function Navbar() {
 
   const handleLogout = () => {
     logout();
-    navigate(homeUrl());
-  };
-
-  const handleLogoClick = () => {
-    navigate(homeUrl());
+    navigate(storefrontHome());
   };
 
   return (
@@ -211,8 +206,8 @@ export default function Navbar() {
     >
       <div className="container mx-auto px-4 md:px-6 flex items-center justify-between">
 
-        {/* ✅ اللوجو + اسم الأكاديمية */}
-        <div className="flex items-center gap-2 cursor-pointer" onClick={handleLogoClick}>
+        {/* اللوجو + اسم الأكاديمية */}
+        <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate(storefrontHome())}>
           {logoUrl ? (
             <img src={logoUrl} alt={academyName} className="w-8 h-8 rounded-lg object-cover" />
           ) : (
@@ -223,7 +218,7 @@ export default function Navbar() {
           <span className="font-bold text-xl hidden sm:inline-block">{academyName}</span>
         </div>
 
-        {/* ✅ الـ nav links بتظهر بس في الصفحة الرئيسية */}
+        {/* nav links بتظهر بس في الصفحة الرئيسية للـ storefront */}
         {isHome && (
           <nav className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-sm font-medium hover:text-primary transition-colors">{t("nav.features")}</a>
@@ -232,45 +227,30 @@ export default function Navbar() {
           </nav>
         )}
 
-        {/* الجانب الأيمن */}
         <div className="flex items-center gap-2">
-          {/* ✅ زرار اللغة */}
-          <Button
-            variant="ghost"
-            size="icon"
+          <Button variant="ghost" size="icon"
             onClick={() => setLanguage(language === "en" ? "ar" : "en")}
-            className="rounded-full"
-            title="Toggle Language"
-          >
+            className="rounded-full" title="Toggle Language">
             <Languages className="h-5 w-5" />
           </Button>
 
-          {/* ✅ زرار الثيم */}
-          <Button
-            variant="ghost"
-            size="icon"
+          <Button variant="ghost" size="icon"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="rounded-full"
-            title="Toggle Theme"
-          >
+            className="rounded-full" title="Toggle Theme">
             <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
             <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
           </Button>
 
           <div className="h-6 w-[1px] bg-border mx-1 hidden sm:block" />
 
-          {/* 🔔 Bell — بس للطالب المسجّل */}
           {isAuthenticated && user && (
             <NotificationBell language={language} />
           )}
 
           {isAuthenticated && user ? (
             <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                className="gap-2 hidden sm:flex"
-                onClick={() => navigate("/portal")}
-              >
+              <Button variant="ghost" className="gap-2 hidden sm:flex"
+                onClick={() => navigate("/storefront/portal")}>
                 <UserCircle className="w-5 h-5" />
                 <span className="max-w-28 truncate">{user.name}</span>
               </Button>
@@ -280,27 +260,20 @@ export default function Navbar() {
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="gap-2"
+              <Button variant="ghost" size="sm" className="gap-2"
                 onClick={() => {
                   const tenant = localStorage.getItem("tenant_slug");
-                  navigate(tenant ? `/login?tenant=${tenant}` : "/login");
-                }}
-              >
+                  navigate(tenant ? `/storefront/login?tenant=${tenant}` : "/storefront/login");
+                }}>
                 <LogIn className="w-4 h-4" />
                 <span className="hidden xs:inline">{language === "ar" ? "دخول" : "Login"}</span>
               </Button>
 
-              <Button
-                size="sm"
-                className="rounded-full px-5"
+              <Button size="sm" className="rounded-full px-5"
                 onClick={() => {
                   const tenant = localStorage.getItem("tenant_slug");
-                  navigate(tenant ? `/register?tenant=${tenant}` : "/register");
-                }}
-              >
+                  navigate(tenant ? `/storefront/register?tenant=${tenant}` : "/storefront/register");
+                }}>
                 {language === "ar" ? "ابدأ الآن" : "Join Now"}
               </Button>
             </div>
