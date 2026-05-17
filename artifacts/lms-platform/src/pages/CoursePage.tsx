@@ -121,7 +121,7 @@ export default function CoursePage() {
 
   const handleBuyNow = () => {
     if (course) {
-      navigate(`/storefront/checkout?courseId=${course.id}`);
+      navigate(toStorefront(`/storefront/checkout?courseId=${course.id}`));
     }
   };
 
@@ -160,7 +160,7 @@ export default function CoursePage() {
         <div className="bg-gradient-to-br from-primary/10 via-primary/5 to-background border-b border-border">
           <div className="max-w-5xl mx-auto px-4 py-10">
             <button
-              onClick={() => navigate("/storefront")}
+              onClick={() => navigate(toStorefront("/storefront"))}
               className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground text-sm mb-6 transition-colors"
             >
               <ChevronLeft className={cn("w-4 h-4", language === "ar" && "rotate-180")} />

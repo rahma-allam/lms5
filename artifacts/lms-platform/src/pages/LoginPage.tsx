@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
+import { useTenant } from "@/hooks/useTenant";
+import { toStorefront } from "@/lib/tenantNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,13 +12,22 @@ import { Lock, Mail, Loader2, GraduationCap, AlertCircle } from "lucide-react";
 import Navbar from "@/components/storefront/Navbar";
 
 export default function LoginPage() {
-  const { t, language } = useI18n();
+  const { t } = useI18n();
   const { login } = useAuth();
+  const { theme, isLoading: tenantLoading } = useTenant();
   const [, navigate] = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isPending, setIsPending] = useState(false);
+
+  // Ensure tenant slug is in URL so auth.tsx getTenantParam() picks it up
+  useEffect(() => {
+    const slug = localStorage.getItem("tenant_slug");
+    if (slug && !new URLSearchParams(window.location.search).get("tenant")) {
+      window.history.replaceState(null, "", `${window.location.pathname}?tenant=${slug}`);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +35,7 @@ export default function LoginPage() {
     setIsPending(true);
     try {
       await login(email, password);
-      const redirectTo = sessionStorage.getItem("redirect_after_login") || "/portal";
+      const redirectTo = sessionStorage.getItem("redirect_after_login") || toStorefront("/storefront/portal");
       sessionStorage.removeItem("redirect_after_login");
       navigate(redirectTo);
     } catch (err: any) {
@@ -46,7 +57,11 @@ export default function LoginPage() {
         >
           <div className="text-center mb-8">
             <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary/25">
-              <GraduationCap className="w-7 h-7 text-primary-foreground" />
+              {theme?.logoUrl ? (
+                <img src={theme.logoUrl} alt={theme.academyName} className="w-10 h-10 object-contain rounded-xl" />
+              ) : (
+                <GraduationCap className="w-7 h-7 text-primary-foreground" />
+              )}
             </div>
             <h1 className="text-2xl font-bold mb-1">{t("portal.loginTitle")}</h1>
             <p className="text-sm text-muted-foreground">{t("portal.loginSubtitle")}</p>
@@ -65,15 +80,9 @@ export default function LoginPage() {
                 <Label htmlFor="email">{t("portal.email")}</Label>
                 <div className="relative">
                   <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="email"
-                    type="email"
-                    required
-                    value={email}
+                  <Input id="email" type="email" required value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="name@example.com"
-                    className="ps-9"
-                  />
+                    placeholder="name@example.com" className="ps-9" />
                 </div>
               </div>
 
@@ -81,19 +90,13 @@ export default function LoginPage() {
                 <Label htmlFor="password">{t("portal.password")}</Label>
                 <div className="relative">
                   <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    type="password"
-                    required
-                    value={password}
+                  <Input id="password" type="password" required value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="ps-9"
-                  />
+                    placeholder="••••••••" className="ps-9" />
                 </div>
               </div>
 
-              <Button type="submit" className="w-full gap-2" disabled={isPending}>
+              <Button type="submit" className="w-full gap-2" disabled={isPending || tenantLoading}>
                 {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
                 {t("portal.loginBtn")}
               </Button>
@@ -101,10 +104,8 @@ export default function LoginPage() {
 
             <p className="text-sm text-center text-muted-foreground mt-4">
               {t("portal.noAccount")}{" "}
-              <button
-                onClick={() => navigate("/register")}
-                className="text-primary hover:underline font-medium"
-              >
+              <button onClick={() => navigate(toStorefront("/storefront/register"))}
+                className="text-primary hover:underline font-medium">
                 {t("portal.registerLink")}
               </button>
             </p>

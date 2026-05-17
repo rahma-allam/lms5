@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
+import { useTenant } from "@/hooks/useTenant";
+import { toStorefront } from "@/lib/tenantNav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,10 +14,19 @@ import Navbar from "@/components/storefront/Navbar";
 export default function RegisterPage() {
   const { t, language } = useI18n();
   const { register } = useAuth();
+  const { theme, isLoading: tenantLoading } = useTenant();
   const [, navigate] = useLocation();
   const [form, setForm] = useState({ name: "", email: "", password: "", phone: "" });
   const [error, setError] = useState("");
   const [isPending, setIsPending] = useState(false);
+
+  // Ensure tenant slug is in URL so auth.tsx getTenantParam() picks it up
+  useEffect(() => {
+    const slug = localStorage.getItem("tenant_slug");
+    if (slug && !new URLSearchParams(window.location.search).get("tenant")) {
+      window.history.replaceState(null, "", `${window.location.pathname}?tenant=${slug}`);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +34,7 @@ export default function RegisterPage() {
     setIsPending(true);
     try {
       await register({ name: form.name, email: form.email, password: form.password, phone: form.phone || undefined });
-      navigate("/portal");
+      navigate(toStorefront("/storefront/portal"));
     } catch (err: any) {
       setError(err.message || t("portal.registerError"));
     } finally {
@@ -43,7 +54,11 @@ export default function RegisterPage() {
         >
           <div className="text-center mb-8">
             <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary/25">
-              <GraduationCap className="w-7 h-7 text-primary-foreground" />
+              {theme?.logoUrl ? (
+                <img src={theme.logoUrl} alt={theme.academyName} className="w-10 h-10 object-contain rounded-xl" />
+              ) : (
+                <GraduationCap className="w-7 h-7 text-primary-foreground" />
+              )}
             </div>
             <h1 className="text-2xl font-bold mb-1">{t("portal.registerTitle")}</h1>
             <p className="text-sm text-muted-foreground">{t("portal.registerSubtitle")}</p>
@@ -98,7 +113,7 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full gap-2" disabled={isPending}>
+              <Button type="submit" className="w-full gap-2" disabled={isPending || tenantLoading}>
                 {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
                 {t("portal.registerBtn")}
               </Button>
@@ -106,7 +121,8 @@ export default function RegisterPage() {
 
             <p className="text-sm text-center text-muted-foreground mt-4">
               {t("portal.hasAccount")}{" "}
-              <button onClick={() => navigate("/login")} className="text-primary hover:underline font-medium">
+              <button onClick={() => navigate(toStorefront("/storefront/login"))}
+                className="text-primary hover:underline font-medium">
                 {t("portal.loginLink")}
               </button>
             </p>

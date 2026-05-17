@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, timestamp, numeric, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, integer, timestamp, numeric, pgEnum, uniqueIndex } from "drizzle-orm/pg-core";
 import { tenantsTable } from "./tenants";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
@@ -13,7 +13,7 @@ export const studentsTable = pgTable("students", {
   id: serial("id").primaryKey(),
   tenantId: integer("tenant_id").notNull().references(() => tenantsTable.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
-  email: text("email").notNull().unique(),
+  email: text("email").notNull(),        // ← removed .unique() — uniqueness is per-tenant (see index below)
   password: text("password").notNull().default(""),
   phone: text("phone"),
   status: studentStatusEnum("status").notNull().default("pending"),
@@ -22,7 +22,9 @@ export const studentsTable = pgTable("students", {
   progress: numeric("progress", { precision: 5, scale: 2 }).notNull().default("0"),
   enrolledAt: timestamp("enrolled_at").notNull().defaultNow(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+}, (t) => [
+  uniqueIndex("students_tenant_email_unique").on(t.tenantId, t.email),  // ← unique per tenant
+]);
 
 export const paymentsTable = pgTable("payments", {
   id: serial("id").primaryKey(),

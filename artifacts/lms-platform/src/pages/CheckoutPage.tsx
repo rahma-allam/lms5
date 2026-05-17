@@ -1,3 +1,4 @@
+import { toStorefront } from "@/lib/tenantNav";
 import { useLocation, useSearch } from "wouter";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
@@ -105,17 +106,17 @@ export default function CheckoutPage() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setCouponError(data.error || (language === "ar" ? "كود غير صالح" : "Invalid coupon"));
+        setCouponError(data.error || t("checkout.coupon.invalid"));
         setCouponData(null);
       } else if (!data.valid) {
-        setCouponError(data.reason || (language === "ar" ? "كوبون غير صالح" : "Coupon not valid"));
+        setCouponError(data.reason || t("checkout.coupon.invalid"));
         setCouponData(null);
       } else {
         setCouponData({ code: couponInput.trim().toUpperCase(), discountAmount: data.discountValue, discountType: data.discountType });
         setCouponError(null);
       }
     } catch {
-      setCouponError(language === "ar" ? "خطأ في التحقق من الكوبون" : "Coupon validation failed");
+      setCouponErrort("checkout.coupon.error");
     } finally {
       setCouponLoading(false);
     }
@@ -145,13 +146,13 @@ export default function CheckoutPage() {
         });
         const data = await res.json();
         if (!res.ok) {
-          setError(data.error || (language === "ar" ? "فشل فتح بوابة الدفع" : "Payment gateway error"));
+          setError(data.error || t("checkout.gateway.error"));
         } else {
           setPaymobIframeUrl(data.iframeUrl);
           setStep("paymob");
         }
       } catch {
-        setError(language === "ar" ? "تعذر الاتصال ببوابة الدفع" : "Could not reach payment gateway");
+        setErrort("checkout.gateway.unreachable");
       } finally {
         setIsSubmitting(false);
       }
@@ -159,14 +160,14 @@ export default function CheckoutPage() {
     }
 
     if (!receiptFile) {
-      setError(language === "ar" ? "يرجى رفع صورة الإيصال أولاً" : "Please upload the receipt first");
+      setErrort("checkout.receipt.required");
       return;
     }
     setStep("confirm");
   };
 
   const handleConfirm = async () => {
-    if (!user) { navigate("/storefront/login"); return; }
+    if (!user) { navigate(toStorefront("/storefront/login")); return; }
     setIsSubmitting(true);
     setError(null);
 
@@ -187,7 +188,7 @@ export default function CheckoutPage() {
         receiptUrl = (await uploadRes.json()).receiptUrl;
       } else {
         const err = await uploadRes.json().catch(() => ({}));
-        setError(err.error || (language === "ar" ? "فشل رفع الإيصال" : "Failed to upload receipt"));
+        setError(err.error || t("checkout.receipt.upload.error"));
         setIsSubmitting(false);
         return;
       }
@@ -214,7 +215,7 @@ export default function CheckoutPage() {
       setStep("success");
     } else {
       const err = await res.json().catch(() => ({}));
-      setError(err.error || (language === "ar" ? "حدث خطأ أثناء إرسال الطلب" : "Something went wrong"));
+      setError(err.error || t("checkout.submit.error"));
     }
     setIsSubmitting(false);
   };
@@ -243,7 +244,7 @@ export default function CheckoutPage() {
                 </button>
                 <h2 className="text-lg font-bold flex items-center gap-2">
                   <CreditCard className="w-4 h-4 text-primary" />
-                  {language === "ar" ? "أدخل بيانات البطاقة" : "Enter Card Details"}
+                  {t("checkout.paymob.enter")}
                 </h2>
               </div>
               <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-lg">
@@ -251,13 +252,13 @@ export default function CheckoutPage() {
               </div>
               <p className="text-center text-xs text-muted-foreground mt-3 flex items-center justify-center gap-1">
                 <Lock className="w-3 h-3" />
-                {language === "ar" ? "مدعوم من Paymob — دفع آمن ومشفر" : "Powered by Paymob — Secure & Encrypted"}
+                {t("checkout.paymob.secure")}
               </p>
               <div className="text-center mt-2">
                 <a href={paymobIframeUrl} target="_blank" rel="noreferrer"
                   className="text-xs text-primary hover:underline inline-flex items-center gap-1">
                   <ExternalLink className="w-3 h-3" />
-                  {language === "ar" ? "فتح في نافذة جديدة" : "Open in new window"}
+                  {t("checkout.paymob.open")}
                 </a>
               </div>
             </motion.div>
@@ -270,9 +271,7 @@ export default function CheckoutPage() {
               <h1 className="text-3xl font-bold mb-3">{t("checkout.success.title")}</h1>
               <p className="text-muted-foreground mb-2">{t("checkout.success.subtitle")}</p>
               <p className="text-sm text-muted-foreground mb-8">
-                {language === "ar"
-                  ? "جاري مراجعة طلبك، سيتم تفعيل الكورس فور التأكد من التحويل."
-                  : "Your request is being reviewed. Course will be activated once payment is verified."}
+                {t("checkout.success.review")}
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button onClick={() => {
@@ -296,7 +295,7 @@ export default function CheckoutPage() {
 
                 <div className="flex items-center gap-3">
                   <button
-                    onClick={() => step === "confirm" ? setStep("details") : navigate("/storefront")}
+                    onClick={() => step === "confirm" ? setStep("details") : navigate(toStorefront("/storefront"))}
                     className="text-muted-foreground hover:text-foreground transition-colors">
                     <ChevronLeft className={cn("w-5 h-5", language === "ar" && "rotate-180")} />
                   </button>
@@ -334,13 +333,13 @@ export default function CheckoutPage() {
 
                     <div className="bg-card border border-border rounded-2xl p-6 space-y-3">
                       <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">
-                        {language === "ar" ? "كوبون الخصم" : "Discount Coupon"}
+                        {t("checkout.coupon")}
                       </h2>
                       <div className="flex gap-2">
                         <Input
                           value={couponInput}
                           onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
-                          placeholder={language === "ar" ? "أدخل كود الكوبون" : "Enter coupon code"}
+                          placeholder={t("checkout.coupon.placeholder")}
                           className="flex-1 font-mono uppercase"
                           disabled={!!couponData}
                           onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleApplyCoupon())}
@@ -349,7 +348,7 @@ export default function CheckoutPage() {
                           <Button type="button" variant="outline" size="sm" onClick={() => { setCouponData(null); setCouponInput(""); }}>✕</Button>
                         ) : (
                           <Button type="button" size="sm" onClick={handleApplyCoupon} disabled={couponLoading || !couponInput.trim()}>
-                            {couponLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : (language === "ar" ? "تطبيق" : "Apply")}
+                            {couponLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : t("checkout.coupon.apply")}
                           </Button>
                         )}
                       </div>
@@ -396,14 +395,14 @@ export default function CheckoutPage() {
                           <div className={cn("space-y-3 p-4 border-2 border-dashed border-muted rounded-2xl bg-muted/20", selectedMethod === "paymob" && "hidden")}>
                             <Label className="flex items-center gap-2">
                               <Upload className="w-4 h-4" />
-                              {language === "ar" ? "ارفع صورة إيصال التحويل" : "Upload transaction receipt"}
+                              {t("checkout.receipt.upload")}
                             </Label>
                             {!previewUrl ? (
                               <div onClick={() => fileInputRef.current?.click()}
                                 className="h-32 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-muted/40 transition-colors rounded-xl border border-border bg-background">
                                 <Upload className="w-8 h-8 text-muted-foreground" />
                                 <span className="text-xs text-muted-foreground italic">
-                                  {language === "ar" ? "اضغط لاختيار صورة" : "Click to select an image"}
+                                  {t("checkout.receipt.click")}
                                 </span>
                                 <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
                               </div>
@@ -424,7 +423,7 @@ export default function CheckoutPage() {
                     <Button type="submit" size="lg" className="w-full gap-2" disabled={selectedMethod !== "paymob" && !receiptFile || isSubmitting}>
                       {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
                       {selectedMethod === "paymob"
-                        ? (language === "ar" ? "ادفع بالبطاقة عبر Paymob" : "Pay with Card via Paymob")
+                        ? t("checkout.paymob.label")
                         : t("checkout.proceed")}
                     </Button>
                   </motion.form>
@@ -464,13 +463,13 @@ export default function CheckoutPage() {
                       </div>
                       {previewUrl && (
                         <div className="pt-2">
-                          <p className="text-xs text-muted-foreground mb-2">{language === "ar" ? "الإيصال المرفق" : "Attached Receipt"}</p>
+                          <p className="text-xs text-muted-foreground mb-2">{t("checkout.receipt.attached")}</p>
                           <img src={previewUrl} alt="Receipt preview" className="w-full max-h-40 object-contain rounded-xl border bg-black" />
                         </div>
                       )}
                       {couponData && discountAmount > 0 && (
                         <div className="flex justify-between text-sm text-emerald-600 dark:text-emerald-400">
-                          <span>{language === "ar" ? "خصم الكوبون" : "Coupon discount"}</span>
+                          <span>{t("checkout.coupon.discount")}</span>
                           <span>-${discountAmount.toFixed(2)}</span>
                         </div>
                       )}
@@ -485,8 +484,8 @@ export default function CheckoutPage() {
                     <Button size="lg" className="w-full gap-2" onClick={handleConfirm} disabled={isSubmitting || courseLoading}>
                       {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                       {isSubmitting
-                        ? (language === "ar" ? "جاري الإرسال..." : "Submitting...")
-                        : `${t("checkout.pay")} $${finalPrice.toFixed(2)}`}
+                        ? t("checkout.submitting")
+                        : checkout.pay}
                     </Button>
                   </motion.div>
                 )}

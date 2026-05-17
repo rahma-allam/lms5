@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchStorefront } from "@/lib/api";
+import { toStorefront } from "@/lib/tenantNav";
 
 function fetchWithAuth(url: string) {
   const token  = localStorage.getItem("auth_token");
@@ -250,7 +251,7 @@ export default function Navbar() {
           {isAuthenticated && user ? (
             <div className="flex items-center gap-2">
               <Button variant="ghost" className="gap-2 hidden sm:flex"
-                onClick={() => navigate("/storefront/portal")}>
+                onClick={() => navigate(toStorefront("/storefront/portal"))}>
                 <UserCircle className="w-5 h-5" />
                 <span className="max-w-28 truncate">{user.name}</span>
               </Button>
